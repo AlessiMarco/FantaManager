@@ -183,11 +183,18 @@
   .slots { margin-left: auto; font-size: 12px; color: var(--text-4); }
   .slots b { color: var(--text-2); font-weight: 500; font-variant-numeric: tabular-nums; }
 
-  .cols { display: grid; grid-template-columns: 26px minmax(0,1fr) minmax(0,1fr); gap: 8px; }
-  .panel {
-    border-radius: 10px; padding: 0 8px 8px; min-width: 0; overflow: hidden;
+  .cols { display: grid; grid-template-columns: 26px minmax(0,1fr); gap: 8px; }
+  /* box unico per strategia e live, con la pipe al centro come nella tabella riepilogo */
+  .pbox {
+    position: relative; display: grid; grid-template-columns: 1fr 1fr; min-width: 0;
+    border-radius: 10px; overflow: hidden;
     background: rgba(255,255,255,0.045); box-shadow: inset 0 0 0 1px var(--edge);
   }
+  .pbox::after {
+    content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 1px;
+    background: var(--hairline); pointer-events: none;
+  }
+  .panel { padding: 0 8px 8px; min-width: 0; }
   .plab {
     display: block; text-align: center; font-size: 12px; letter-spacing: 0.12em; font-weight: 600;
     margin: 0 -8px 9px; padding: 8px 0; border-bottom: 1px solid var(--edge);
@@ -253,6 +260,9 @@
   .shead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
   .stit { font-size: 15px; font-weight: 500; letter-spacing: 0.04em; }
   .sbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .sheet .riga { padding: 10px 0; }
+  .sheet .sep { margin: 6px 0 4px; }
+  .sheet .torta { padding: 4px 0 0; background: none; box-shadow: none; }
   .nota { font-size: 12px; color: var(--text-4); margin: 0 0 8px; line-height: 1.45; }
   .vuoto { font-size: 13px; color: var(--text-4); margin: 18px 0 8px; text-align: center; }
   .btn {
@@ -290,9 +300,12 @@
   /* ——— telefono ——— */
   @media (max-width: 720px) {
     :root { --padT: 12px; }
-    body { padding: 12px 12px calc(40px + env(safe-area-inset-bottom)); }
+    body { padding: 0 12px calc(40px + env(safe-area-inset-bottom)); }
+    .wrap { display: flex; flex-direction: column; }
+    #mbar { order: -1; }
     .summaries { flex-direction: column; gap: 12px; margin-bottom: 12px; }
-    .totali { flex: none; min-width: 0; width: 100%; padding: 14px 16px 14px; }
+    /* totali e torta escono dal flusso: vivono nell'intestazione e nei pannelli */
+    .summaries .totali, .summaries .torta { display: none; }
     .torta { flex: none; min-width: 0; max-width: none; }
     .torta svg { flex: 0 0 auto; width: 250px; max-width: 100%; margin: 0 auto; }
     .leg { flex: 1 1 100%; }
@@ -309,13 +322,25 @@
 
     .mbar {
       display: block; position: sticky; top: 0; z-index: 20;
-      margin: 0 -12px 12px; padding: 8px 12px 10px; background: rgba(0,0,0,0.92);
+      margin: 0 -12px 12px; padding: calc(8px + env(safe-area-inset-top)) 12px 10px;
+      background: rgba(0,0,0,0.92);
       -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--edge);
     }
-    .mres { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-4); letter-spacing: 0.08em; margin-bottom: 8px; }
-    .mres b { color: var(--text-1); font-weight: 500; font-size: 15px; letter-spacing: 0; font-variant-numeric: tabular-nums; }
-    .mres b.neg { color: var(--neg); }
+    .mtop { display: flex; align-items: center; gap: 18px; margin-bottom: 8px; }
+    .mval { display: flex; flex-direction: column; gap: 1px; }
+    .mval .k { font-size: 10px; }
+    .mval b { font-size: 24px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .mval b.neg { color: var(--neg); }
+    .mval .cr { font-size: 11px; color: var(--text-4); font-weight: 400; margin-left: 3px; }
+    .mval.mx b { font-size: 18px; color: var(--text-2); }
+    .mico { margin-left: auto; display: flex; gap: 6px; }
+    .ico {
+      width: 40px; height: 40px; border-radius: 10px; cursor: pointer; padding: 0;
+      border: 1px solid var(--edge); background: rgba(255,255,255,0.05); color: var(--text-2);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ico svg { width: 20px; height: 20px; }
     .mtabs { display: flex; gap: 6px; }
     .mtab {
       flex: 1; height: 44px; border-radius: 9px; cursor: pointer; font: inherit;
@@ -434,6 +459,7 @@ const $grid = document.getElementById('grid');
 const $overlay = document.getElementById('overlay');
 const $toast = document.getElementById('toast');
 const set = (sel, txt) => { const el = document.querySelector(sel); if (el) el.textContent = txt; };
+const setAll = (sel, txt) => document.querySelectorAll(sel).forEach(el => { el.textContent = txt; });
 
 let timerToast;
 function avviso(testo) {
@@ -458,20 +484,60 @@ function colonnaTotali() {
     <div class="sep"></div>
     <div class="riga">
       <span class="rk">BUDGET</span>
-      <input class="budget" id="budget" inputmode="decimal" value="${cr(stato.budget)}">
+      <input class="budget" inputmode="decimal" aria-label="Budget" value="${cr(stato.budget)}">
     </div>
     <div class="riga">
       <span class="rk">SLOT</span>
-      <span class="rv" id="slotTot">0 / 25</span>
+      <span class="rv slotTot">0 / 25</span>
     </div>
     <div class="track"><i id="trackTot" style="width:0%;background:var(--live)"></i></div>
     <div class="azioni">
-      <button id="salva">Salva</button>
-      <button id="apriSnap">Salvataggi<b id="nSnap">${snap.length}</b></button>
-      <button id="azzera">Azzera</button>
+      <button id="salva" data-az="salva">Salva</button>
+      <button id="apriSnap" data-apri="salvataggi">Salvataggi<b class="nSnap">${snap.length}</b></button>
+      <button id="azzera" data-az="azzera">Azzera</button>
     </div>
   </div>`;
 }
+
+/* pannello impostazioni sul telefono: budget e azioni che sul desktop stanno nella colonna totali */
+function pannelloImpostazioni() {
+  return `<div class="sheet" role="dialog" aria-label="Impostazioni">
+    <div class="shead">
+      <span class="stit">Impostazioni</span>
+      <button class="btn ghost" data-chiudi>Chiudi</button>
+    </div>
+    <div class="riga">
+      <span class="rk">BUDGET</span>
+      <input class="budget" inputmode="decimal" aria-label="Budget" value="${cr(stato.budget)}">
+    </div>
+    <div class="riga">
+      <span class="rk">SLOT</span>
+      <span class="rv slotTot">0 / 0</span>
+    </div>
+    <div class="sep"></div>
+    <div class="sbar">
+      <button class="btn" data-az="salva">Salva</button>
+      <button class="btn" data-apri="salvataggi">Salvataggi<b class="nSnap" style="color:var(--text-4);margin-left:4px">${snap.length}</b></button>
+      <button class="btn ghost" data-az="azzera">Azzera</button>
+    </div>
+    <p class="nota">Salva crea un salvataggio con data e ora. Il lavoro in corso si salva comunque da solo.</p>
+  </div>`;
+}
+
+function pannelloTorta() {
+  return `<div class="sheet" role="dialog" aria-label="Ripartizione per reparto">
+    <div class="shead">
+      <span class="stit">Ripartizione</span>
+      <button class="btn ghost" data-chiudi>Chiudi</button>
+    </div>
+    ${torta()}
+  </div>`;
+}
+
+const ICO = {
+  torta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.2 15.9A10 10 0 1 1 8 2.8"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>',
+  impostazioni: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+};
 
 function tabella() {
   const righe = stato.ruoli.map((r, i) => `
@@ -605,9 +671,13 @@ function torta() {
 /* barra fissa in alto sul telefono: residuo, offerta max e schede dei reparti */
 function barraMobile() {
   return `<div class="mbar">
-    <div class="mres">
-      <span>RESIDUO <b id="mRes">0</b> cr</span>
-      <span>MAX <b id="mMax">0</b> cr</span>
+    <div class="mtop">
+      <div class="mval"><span class="k">RESIDUO</span><b id="mRes">0<span class="cr">cr</span></b></div>
+      <div class="mval mx"><span class="k">OFFERTA MAX</span><b id="mMax">0<span class="cr">cr</span></b></div>
+      <div class="mico">
+        <button class="ico" data-apri="torta" aria-label="Grafico a torta">${ICO.torta}</button>
+        <button class="ico" data-apri="impostazioni" aria-label="Impostazioni">${ICO.impostazioni}</button>
+      </div>
     </div>
     <div class="mtabs">${stato.ruoli.map((r, i) => `
       <button class="mtab ${i === reparto ? 'on' : ''}" data-reparto="${i}" style="--hex:${r.hex}">
@@ -655,8 +725,10 @@ function blocco(ri) {
     <div class="track"><i data-track="${ri}" style="width:0%;background:${r.hex}"></i></div>
     <div class="cols">
       <div class="labels">${et}</div>
-      ${pannello('p', 'STRATEGIA', ri, 'p')}
-      ${pannello('l', 'LIVE',      ri, 'l')}
+      <div class="pbox">
+        ${pannello('p', 'STRATEGIA', ri, 'p')}
+        ${pannello('l', 'LIVE',      ri, 'l')}
+      </div>
     </div>
     <button class="add" data-add="${ri}">+ Aggiungi slot</button>
   </div>`;
@@ -707,7 +779,8 @@ function aggiorna(escludi) {
   set('[data-totpc="l"]', pcFmt(quota(totL)));
   scriviDelta('tot', totL - totP, usati > 0);
 
-  set('#slotTot', `${slotPieni} / ${slotTot}`);
+  setAll('.slotTot', `${slotPieni} / ${slotTot}`);
+  document.querySelectorAll('input.budget').forEach(i => { if (i !== escludi) i.value = cr(stato.budget); });
   const barTot = document.getElementById('trackTot');
   if (barTot) barTot.style.width = (slotTot ? Math.round((slotPieni / slotTot) * 100) : 0) + '%';
 
@@ -720,14 +793,14 @@ function aggiorna(escludi) {
   const vuoti = slotTot - slotPieni;
   const offMax = cr(Math.max(0, Math.floor(res - Math.max(0, vuoti - 1)))) || '0';
   set('#offMax', offMax);
-  set('#mMax', offMax);
   const $r = document.getElementById('residuo');
   if ($r) {
     $r.textContent = cr(res) || '0';
     $r.closest('.v').classList.toggle('neg', res < 0);
   }
-  const $mr = document.getElementById('mRes');
-  if ($mr) { $mr.textContent = cr(res) || '0'; $mr.classList.toggle('neg', res < 0); }
+  const $mr = document.getElementById('mRes'), $mm = document.getElementById('mMax');
+  if ($mr) { $mr.firstChild.textContent = cr(res) || '0'; $mr.classList.toggle('neg', res < 0); }
+  if ($mm) $mm.firstChild.textContent = offMax;
 
   const $t = document.querySelector('.torta');
   if ($t) $t.outerHTML = torta();
@@ -754,7 +827,7 @@ function riassunto(s) {
 function creaSnap(nome, s, data) {
   snap.unshift({ id: nuovoId(), nome, data: data || new Date().toISOString(), stato: clona(s) });
   salvaSnap();
-  set('#nSnap', snap.length);
+  setAll('.nSnap', snap.length);
 }
 
 function pannelloSnap() {
@@ -772,7 +845,7 @@ function pannelloSnap() {
   return `<div class="sheet" role="dialog" aria-label="Salvataggi">
     <div class="shead">
       <span class="stit">Salvataggi</span>
-      <button class="btn ghost" id="chiudiSnap">Chiudi</button>
+      <button class="btn ghost" data-chiudi>Chiudi</button>
     </div>
     <div class="sbar">
       <button class="btn" id="esporta">Esporta tutto</button>
@@ -783,8 +856,10 @@ function pannelloSnap() {
     ${lista}
   </div>`;
 }
-function apriSnap() { $overlay.innerHTML = pannelloSnap(); $overlay.hidden = false; }
+function apriPannello(html) { $overlay.innerHTML = html; $overlay.hidden = false; aggiorna(); }
+function apriSnap() { apriPannello(pannelloSnap()); }
 function chiudiSnap() { $overlay.hidden = true; $overlay.innerHTML = ''; }
+const PANNELLI = { salvataggi: pannelloSnap, impostazioni: pannelloImpostazioni, torta: pannelloTorta };
 
 function esporta() {
   const dati = { app: 'FantaManager', versione: 1, esportato: new Date().toISOString(), corrente: stato, salvataggi: snap };
@@ -818,7 +893,7 @@ function importa(file) {
       }
       if (n === 0) { avviso('Nessun salvataggio nuovo nel file'); return; }
       snap.sort((a, b) => b.data.localeCompare(a.data));
-      salvaSnap(); set('#nSnap', snap.length); apriSnap();
+      salvaSnap(); setAll('.nSnap', snap.length); apriSnap();
       avviso(n === 1 ? '1 salvataggio importato' : `${n} salvataggi importati`);
     } catch (e) { avviso('File non valido'); }
   };
@@ -839,7 +914,7 @@ function conferma(b, testo, fn) {
 /* ——— eventi ——— */
 document.addEventListener('input', e => {
   const el = e.target;
-  if (el.id === 'budget') { stato.budget = num(el.value) ?? 0; aggiorna(el); salva(); return; }
+  if (el.classList.contains('budget')) { stato.budget = num(el.value) ?? 0; aggiorna(el); salva(); return; }
   if (el.dataset.rinomina) {
     const s = snap.find(x => x.id === el.dataset.rinomina);
     if (s) { s.nome = el.value; clearTimeout(timerSalva); timerSalva = setTimeout(salvaSnap, 350); }
@@ -873,7 +948,7 @@ function evidenzia(card, i) {
 }
 document.addEventListener('mousemove', e => {
   if (!conMouse) return;
-  const card = document.querySelector('.torta');
+  const card = (e.target.closest && e.target.closest('.torta')) || document.querySelector('.torta');
   if (!card) return;
   const el = e.target.closest ? e.target.closest('[data-fetta]') : null;
   const i = el && card.contains(el) ? el.dataset.fetta : null;
@@ -897,7 +972,7 @@ document.addEventListener('click', e => {
   if (add) { stato.ruoli[+add.dataset.add].slot.push({ p: null, l: null }); disegna(); salva(); return; }
 
   const tab = e.target.closest('[data-vista]');
-  if (tab) { vista = tab.dataset.vista; document.querySelector('.torta').outerHTML = torta(); return; }
+  if (tab) { vista = tab.dataset.vista; tab.closest('.torta').outerHTML = torta(); return; }
 
   const mtab = e.target.closest('[data-reparto]');
   if (mtab) {
@@ -915,21 +990,22 @@ document.addEventListener('click', e => {
     return;
   }
 
-  if (e.target.id === 'salva') {
+  const az = e.target.closest('[data-az]');
+  if (az && az.dataset.az === 'salva') {
     creaSnap(`Salvataggio ${snap.length + 1}`, stato);
     salvaSubito();
-    const b = e.target;
-    b.textContent = 'Salvato'; b.classList.add('ok');
-    setTimeout(() => { b.textContent = 'Salva'; b.classList.remove('ok'); }, 1500);
+    az.textContent = 'Salvato'; az.classList.add('ok');
+    setTimeout(() => { az.textContent = 'Salva'; az.classList.remove('ok'); }, 1500);
     return;
   }
-  if (e.target.id === 'azzera') {
-    conferma(e.target, 'Confermi?', () => { stato = iniziale(); disegna(); salvaSubito(); });
+  if (az && az.dataset.az === 'azzera') {
+    conferma(az, 'Confermi?', () => { stato = iniziale(); disegna(); salvaSubito(); chiudiSnap(); });
     return;
   }
 
-  if (e.target.id === 'apriSnap' || e.target.closest('#apriSnap')) { apriSnap(); return; }
-  if (e.target.id === 'chiudiSnap' || e.target === $overlay) { chiudiSnap(); return; }
+  const apri = e.target.closest('[data-apri]');
+  if (apri) { apriPannello(PANNELLI[apri.dataset.apri]()); return; }
+  if (e.target.closest('[data-chiudi]') || e.target === $overlay) { chiudiSnap(); return; }
   if (e.target.id === 'esporta') { esporta(); return; }
 
   const carica = e.target.closest('[data-carica]');
@@ -947,7 +1023,7 @@ document.addEventListener('click', e => {
   if (elimina) {
     conferma(elimina, 'Elimino?', () => {
       snap = snap.filter(x => x.id !== elimina.dataset.elimina);
-      salvaSnap(); set('#nSnap', snap.length); apriSnap();
+      salvaSnap(); setAll('.nSnap', snap.length); apriSnap();
     });
     return;
   }
