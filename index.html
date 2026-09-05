@@ -172,7 +172,7 @@
   }
 
   /* ——— barra mobile (nascosta su desktop) ——— */
-  .mbar { display: none; }
+  .mbar, .mnav { display: none; }
 
   /* ——— reparti ——— */
   .grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 24px; align-items: start; }
@@ -183,36 +183,43 @@
   .slots { margin-left: auto; font-size: 12px; color: var(--text-4); }
   .slots b { color: var(--text-2); font-weight: 500; font-variant-numeric: tabular-nums; }
 
-  .cols { display: grid; grid-template-columns: 26px minmax(0,1fr); gap: 8px; }
-  /* box unico per strategia e live, con la pipe al centro come nella tabella riepilogo */
+  /* box unico per reparto: etichetta slot | strategia (cr, %) | live (cr, %).
+     La pipe è un segmento corto fra i due gruppi, dalle sotto-intestazioni ai totali. */
   .pbox {
-    position: relative; display: grid; grid-template-columns: 1fr 1fr; min-width: 0;
+    position: relative; min-width: 0; padding: 8px 8px 8px;
     border-radius: 10px; overflow: hidden;
     background: rgba(255,255,255,0.045); box-shadow: inset 0 0 0 1px var(--edge);
+    --sl: 26px;   /* colonna etichetta slot */
+    --gg: 6px;    /* gap fra le colonne */
   }
   .pbox::after {
-    content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 1px;
+    content: ''; position: absolute; width: 1px; top: 46px; bottom: 8px;
+    left: calc(50% + (var(--sl) + var(--gg)) / 2);
     background: var(--hairline); pointer-events: none;
   }
-  .panel { padding: 0 8px 8px; min-width: 0; }
-  .plab {
-    display: block; text-align: center; font-size: 12px; letter-spacing: 0.12em; font-weight: 600;
-    margin: 0 -8px 9px; padding: 8px 0; border-bottom: 1px solid var(--edge);
+  .phead, .pcols, .prow, .totrow {
+    display: grid; grid-template-columns: var(--sl) minmax(0,1fr) minmax(0,1fr);
+    column-gap: var(--gg); align-items: center;
   }
-  .panel.p .plab { color: var(--piano); background: rgba(139,131,230,0.13); }
-  .panel.l .plab { color: var(--live);  background: rgba(53,177,164,0.13); }
-  .pcols { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 7px; }
-  .pcols span {
+  .grp { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gg); min-width: 0; }
+
+  .phead { margin-bottom: 8px; }
+  .plab {
+    display: flex; align-items: center; justify-content: center; height: 30px; border-radius: 7px;
+    font-size: 12px; letter-spacing: 0.12em; font-weight: 600;
+  }
+  .plab.p { color: var(--piano); background: rgba(139,131,230,0.13); }
+  .plab.l { color: var(--live);  background: rgba(53,177,164,0.13); }
+  .pcols { margin-bottom: 7px; }
+  .pcols .grp span {
     display: flex; align-items: center; justify-content: center;
     font-size: 12px; color: var(--text-4); letter-spacing: 0.03em;
   }
 
-  .labels { display: flex; flex-direction: column; }
-  .labels .spacer { height: 57px; }
-  .labels > span { height: 36px; margin-bottom: 7px; display: flex; align-items: center; font-size: 12px; font-weight: 500; }
-  .labels .tl { color: var(--text-4); font-weight: 400; margin-bottom: 0; height: 40px; align-items: flex-end; padding-bottom: 9px; }
+  .sl { font-size: 12px; font-weight: 500; }
+  .totrow .sl { color: var(--text-4); font-weight: 400; }
 
-  .prow { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 7px; }
+  .prow { margin-bottom: 7px; }
   .fw { position: relative; min-width: 0; }
   .ph {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
@@ -226,19 +233,16 @@
     font: inherit; font-size: 16px; text-align: center; padding: 0 6px;
     font-variant-numeric: tabular-nums;
   }
-  .panel.p input.f:focus { box-shadow: inset 0 0 0 1.5px var(--piano); }
-  .panel.l input.f:focus { box-shadow: inset 0 0 0 1.5px var(--live); }
+  .grp.p input.f:focus { box-shadow: inset 0 0 0 1.5px var(--piano); }
+  .grp.l input.f:focus { box-shadow: inset 0 0 0 1.5px var(--live); }
 
-  .totrow {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
-    margin-top: 3px; padding-top: 10px; border-top: 1px solid var(--edge);
-  }
-  .totrow span {
+  .totrow { margin-top: 3px; padding-top: 10px; border-top: 1px solid var(--edge); }
+  .totrow .grp span {
     height: 28px; display: flex; align-items: baseline; justify-content: center; gap: 4px;
     font-size: 16px; font-weight: 500; font-variant-numeric: tabular-nums;
   }
-  .panel.p .totrow span { color: var(--piano); }
-  .panel.l .totrow span { color: var(--live); }
+  .totrow .grp.p span { color: var(--piano); }
+  .totrow .grp.l span { color: var(--live); }
 
   .add {
     margin-top: 11px; font-size: 13px; color: var(--text-3);
@@ -327,7 +331,7 @@
       -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--edge);
     }
-    .mtop { display: flex; align-items: center; gap: 18px; margin-bottom: 8px; }
+    .mtop { display: flex; align-items: center; gap: 18px; }
     .mval { display: flex; flex-direction: column; gap: 1px; }
     .mval .k { font-size: 10px; }
     .mval b { font-size: 24px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
@@ -341,7 +345,8 @@
       display: flex; align-items: center; justify-content: center;
     }
     .ico svg { width: 20px; height: 20px; }
-    .mtabs { display: flex; gap: 6px; }
+    .mnav { display: flex; gap: 6px; margin-bottom: 10px; }
+    .bhead { display: none; }
     .mtab {
       flex: 1; height: 44px; border-radius: 9px; cursor: pointer; font: inherit;
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
@@ -368,6 +373,7 @@
 <div class="wrap">
   <div class="summaries" id="sums"></div>
   <div id="mbar"></div>
+  <div id="mnav"></div>
   <div class="grid" id="grid"></div>
 </div>
 <div class="overlay" id="overlay" hidden></div>
@@ -455,6 +461,7 @@ function salvaSnap() {
 
 const $sums = document.getElementById('sums');
 const $mbar = document.getElementById('mbar');
+const $mnav = document.getElementById('mnav');
 const $grid = document.getElementById('grid');
 const $overlay = document.getElementById('overlay');
 const $toast = document.getElementById('toast');
@@ -679,55 +686,63 @@ function barraMobile() {
         <button class="ico" data-apri="impostazioni" aria-label="Impostazioni">${ICO.impostazioni}</button>
       </div>
     </div>
-    <div class="mtabs">${stato.ruoli.map((r, i) => `
-      <button class="mtab ${i === reparto ? 'on' : ''}" data-reparto="${i}" style="--hex:${r.hex}">
-        ${r.nome}<small data-mslot="${i}">0/${r.slot.length}</small>
-      </button>`).join('')}
-    </div>
   </div>`;
 }
 
-function pannello(cls, lab, ri, campo) {
-  const r = stato.ruoli[ri];
-  const righe = r.slot.map((s, si) => `
-    <div class="prow">
-      <span class="fw">
-        <input class="f" placeholder=" " inputmode="decimal" data-r="${ri}" data-s="${si}" data-k="${campo}" data-t="cr" value="${cr(s[campo])}">
-        <span class="ph">cr</span>
-      </span>
-      <span class="fw">
-        <input class="f" placeholder=" " inputmode="decimal" data-r="${ri}" data-s="${si}" data-k="${campo}" data-t="pc" value="${s[campo] === null ? '' : pcFmt(quota(s[campo]))}">
-        <span class="ph">%</span>
-      </span>
-    </div>`).join('');
+/* schede dei reparti sul telefono, appena sopra il box del reparto scelto */
+function navMobile() {
+  return `<div class="mnav">${stato.ruoli.map((r, i) => `
+    <button class="mtab ${i === reparto ? 'on' : ''}" data-reparto="${i}" style="--hex:${r.hex}">
+      ${r.nome}<small data-mslot="${i}">0/${r.slot.length}</small>
+    </button>`).join('')}
+  </div>`;
+}
 
-  return `<div class="panel ${cls}">
-    <span class="plab">${lab}</span>
-    <div class="pcols"><span>cr</span><span>%</span></div>
-    ${righe}
-    <div class="totrow">
-      <span><b data-rtot-cr="${campo}-${ri}">0</b>${CR}</span>
-      <span data-rtot-pc="${campo}-${ri}">0%</span>
-    </div>
+/* una coppia di campi (cr, %) di uno slot, per la strategia o per la live */
+function gruppo(ri, si, campo) {
+  const v = stato.ruoli[ri].slot[si][campo];
+  return `<div class="grp ${campo}">
+    <span class="fw">
+      <input class="f" placeholder=" " inputmode="decimal" data-r="${ri}" data-s="${si}" data-k="${campo}" data-t="cr" value="${cr(v)}">
+      <span class="ph">cr</span>
+    </span>
+    <span class="fw">
+      <input class="f" placeholder=" " inputmode="decimal" data-r="${ri}" data-s="${si}" data-k="${campo}" data-t="pc" value="${v === null ? '' : pcFmt(quota(v))}">
+      <span class="ph">%</span>
+    </span>
   </div>`;
 }
 
 function blocco(ri) {
   const r = stato.ruoli[ri];
-  const et = '<div class="spacer"></div>'
-    + r.slot.map((_, i) => `<span style="color:${r.hex}">${r.ini}${i+1}</span>`).join('')
-    + '<span class="tl">tot</span>';
+  const righe = r.slot.map((_, si) => `
+    <div class="prow">
+      <span class="sl" style="color:${r.hex}">${r.ini}${si + 1}</span>
+      ${gruppo(ri, si, 'p')}
+      ${gruppo(ri, si, 'l')}
+    </div>`).join('');
+  const tot = k => `<div class="grp ${k}">
+      <span><b data-rtot-cr="${k}-${ri}">0</b>${CR}</span>
+      <span data-rtot-pc="${k}-${ri}">0%</span>
+    </div>`;
+
   return `<div class="block ${ri === reparto ? 'on' : ''}" data-ri="${ri}">
     <div class="bhead">
       <span class="rname" style="color:${r.hex}">${r.nome}</span>
       <span class="slots"><b data-slots="${ri}">0/${r.slot.length}</b> slot</span>
     </div>
     <div class="track"><i data-track="${ri}" style="width:0%;background:${r.hex}"></i></div>
-    <div class="cols">
-      <div class="labels">${et}</div>
-      <div class="pbox">
-        ${pannello('p', 'STRATEGIA', ri, 'p')}
-        ${pannello('l', 'LIVE',      ri, 'l')}
+    <div class="pbox">
+      <div class="phead"><span></span><span class="plab p">STRATEGIA</span><span class="plab l">LIVE</span></div>
+      <div class="pcols">
+        <span></span>
+        <div class="grp"><span>cr</span><span>%</span></div>
+        <div class="grp"><span>cr</span><span>%</span></div>
+      </div>
+      ${righe}
+      <div class="totrow">
+        <span class="sl">tot</span>
+        ${tot('p')}${tot('l')}
       </div>
     </div>
     <button class="add" data-add="${ri}">+ Aggiungi slot</button>
@@ -738,6 +753,7 @@ function disegna() {
   if (reparto >= stato.ruoli.length) reparto = 0;
   $sums.innerHTML = colonnaTotali() + tabella() + torta();
   $mbar.innerHTML = barraMobile();
+  $mnav.innerHTML = navMobile();
   $grid.innerHTML = stato.ruoli.map((_, i) => blocco(i)).join('');
   aggiorna();
 }
