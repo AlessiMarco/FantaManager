@@ -1051,13 +1051,12 @@ function pannelloGitHub() {
         <button class="btn ghost" data-chiudi>Chiudi</button>
       </span>
     </div>
-    <p class="nota">Con GitHub collegato ogni salvataggio diventa un file JSON nel tuo repo, uguale su PC e telefono, con tutta la storia delle versioni. Il token resta solo in questo browser: va incollato una volta per dispositivo.</p>
+    <p class="nota">Con GitHub collegato ogni salvataggio diventa un file JSON nella cartella <b>salvataggi</b> del repo, uguale su PC e telefono, con tutta la storia delle versioni. Il token resta solo in questo browser: va incollato una volta per dispositivo.</p>
     <ol class="passi">
-      <li><a href="https://github.com/new?name=FantaManager-dati&visibility=private&description=Salvataggi+di+FantaManager" target="_blank" rel="noopener">Crea un repo privato</a>, per esempio <b>FantaManager-dati</b>.</li>
-      <li><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Crea un token</a> di tipo fine-grained: in "Repository access" scegli solo quel repo, in "Permissions" dai a <b>Contents</b> il livello <b>Read and write</b>.</li>
-      <li>Incolla qui sotto e premi Collega.</li>
+      <li><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Crea un token</a> di tipo fine-grained: in "Repository access" scegli solo il repo qui sotto, in "Permissions" dai a <b>Contents</b> il livello <b>Read and write</b>.</li>
+      <li>Incolla il token qui sotto e premi Collega.</li>
     </ol>
-    <label class="campo">REPO<input id="ghRepo" value="${esc(gh.repo || 'AlessiMarco/FantaManager-dati')}" placeholder="utente/repo" autocapitalize="off" autocomplete="off" spellcheck="false"></label>
+    <label class="campo">REPO<input id="ghRepo" value="${esc(gh.repo || 'AlessiMarco/FantaManager')}" placeholder="utente/repo" autocapitalize="off" autocomplete="off" spellcheck="false"></label>
     <label class="campo">TOKEN<input id="ghToken" type="password" value="${esc(gh.token)}" placeholder="github_pat_…" autocomplete="off"></label>
     <div class="sbar">
       <button class="btn" data-az="ghCollega">Collega e verifica</button>
@@ -1082,7 +1081,7 @@ async function collegaGh(repo, token) {
     if (!info) throw Object.assign(new Error(spiegaErrore(404)), { status: 404 });
     if (!info.permissions || !info.permissions.push) throw Object.assign(new Error(spiegaErrore(403)), { status: 403 });
     salvaGh();
-    mostra(`Collegato a ${repo}${info.private ? '' : ' (attenzione: repo pubblico)'}`, 'ok');
+    mostra(`Collegato a ${repo}${info.private ? '' : ' (repo pubblico: i salvataggi sono visibili a tutti)'}`, 'ok');
     avviso('GitHub collegato');
     await ricaricaRemoto();
     apriSnap(false);
