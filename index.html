@@ -311,6 +311,10 @@
     white-space: nowrap; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis;
   }
   .toast[hidden] { display: none; }
+  .toast .tazione {
+    margin-left: 12px; padding: 4px 10px; border-radius: 6px; cursor: pointer; font: inherit; font-size: 12px; font-weight: 600;
+    color: var(--piano); background: rgba(139,131,230,0.14); border: 1px solid rgba(139,131,230,0.45);
+  }
 
   /* ——— telefono ——— */
   @media (max-width: 720px) {
@@ -480,12 +484,26 @@ const $toast = document.getElementById('toast');
 const set = (sel, txt) => { const el = document.querySelector(sel); if (el) el.textContent = txt; };
 const setAll = (sel, txt) => document.querySelectorAll(sel).forEach(el => { el.textContent = txt; });
 
-let timerToast;
-function avviso(testo) {
-  $toast.textContent = testo; $toast.hidden = false;
+let timerToast, azioneToast = null;
+/* avviso in basso; con etichetta e funzione mostra anche un pulsante (per esempio Annulla) */
+function avviso(testo, etichetta, fn) {
+  $toast.textContent = testo;
+  azioneToast = null;
+  if (etichetta && fn) {
+    const b = document.createElement('button');
+    b.textContent = etichetta; b.className = 'tazione';
+    azioneToast = fn;
+    $toast.appendChild(b);
+  }
+  $toast.hidden = false;
   clearTimeout(timerToast);
-  timerToast = setTimeout(() => { $toast.hidden = true; }, 2200);
+  timerToast = setTimeout(() => { $toast.hidden = true; azioneToast = null; }, etichetta ? 6000 : 2200);
 }
+$toast.addEventListener('click', e => {
+  if (e.target.classList.contains('tazione') && azioneToast) {
+    const fn = azioneToast; azioneToast = null; $toast.hidden = true; clearTimeout(timerToast); fn();
+  }
+});
 
 /* ——— render ——— */
 function colonnaTotali() {
@@ -1042,6 +1060,18 @@ function pannelloSnap() {
   </div>`;
 }
 
+function pannelloSalva() {
+  return `<div class="sheet" role="dialog" aria-label="Salva strategia">
+    <div class="shead">
+      <span class="stit">Salva strategia</span>
+      <button class="btn ghost" data-chiudi>Annulla</button>
+    </div>
+    <label class="campo">NOME<input id="nomeSnap" value="" placeholder="Salvataggio ${lista().length + 1}" autocomplete="off" enterkeyhint="done"></label>
+    <p class="nota">Salva strategia e live di tutti i reparti così come sono adesso${remoto() ? ', come file nel repo GitHub' : ''}. Il nome si può cambiare anche dopo, dalla lista.</p>
+    <div class="sbar"><button class="btn" data-az="salvaNome">Salva</button></div>
+  </div>`;
+}
+
 function pannelloGitHub() {
   return `<div class="sheet" role="dialog" aria-label="Collegamento a GitHub">
     <div class="shead">
@@ -1104,7 +1134,18 @@ function apriSnap(ricarica = true) {
   if (ricarica && remoto()) ricaricaRemoto();
 }
 function chiudiSnap() { pannelloAperto = null; $overlay.hidden = true; $overlay.innerHTML = ''; }
-const PANNELLI = { salvataggi: pannelloSnap, impostazioni: pannelloImpostazioni, torta: pannelloTorta, github: pannelloGitHub };
+const PANNELLI = { salvataggi: pannelloSnap, impostazioni: pannelloImpostazioni, torta: pannelloTorta, github: pannelloGitHub, salva: pannelloSalva };
+
+/* legge il nome scritto nel pannello e crea il salvataggio */
+async function salvaConNome(bottone) {
+  const $n = document.getElementById('nomeSnap');
+  const nome = ($n ? $n.value : '').trim() || `Salvataggio ${lista().length + 1}`;
+  if (bottone) { bottone.disabled = true; bottone.textContent = 'Salvo…'; }
+  salvaSubito();
+  const ok = await creaSnap(nome, stato);
+  if (ok) { avviso(`Salvato: ${nome}`); apriSnap(false); }
+  else if (bottone) { bottone.disabled = false; bottone.textContent = 'Salva'; }
+}
 
 function esporta() {
   const dati = { app: 'FantaManager', versione: 1, esportato: new Date().toISOString(), corrente: stato, salvataggi: lista().map(fileSnap) };
@@ -1186,6 +1227,7 @@ document.addEventListener('change', e => {
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !$overlay.hidden) chiudiSnap();
+  if (e.key === 'Enter' && e.target.id === 'nomeSnap') { e.preventDefault(); salvaConNome(document.querySelector('[data-az="salvaNome"]')); }
 });
 
 const conMouse = window.matchMedia('(hover: hover)').matches;
@@ -1248,16 +1290,12 @@ document.addEventListener('click', e => {
 
   const az = e.target.closest('[data-az]');
   if (az && az.dataset.az === 'salva') {
-    salvaSubito();
-    az.disabled = true; az.classList.add('ok');
-    az.textContent = remoto() ? 'Salvo…' : 'Salvato';
-    creaSnap(`Salvataggio ${lista().length + 1}`, stato).then(ok => {
-      az.textContent = ok ? 'Salvato' : 'Non salvato';
-      if (pannelloAperto === 'salvataggi') apriSnap(false);
-      setTimeout(() => { az.textContent = 'Salva'; az.classList.remove('ok'); az.disabled = false; }, 1500);
-    });
+    apriPannello(pannelloSalva(), 'salva');
+    const $n = document.getElementById('nomeSnap');
+    if ($n) $n.focus();
     return;
   }
+  if (az && az.dataset.az === 'salvaNome') { salvaConNome(az); return; }
   if (az && az.dataset.az === 'azzera') {
     conferma(az, 'Confermi?', () => { stato = iniziale(); disegna(); salvaSubito(); chiudiSnap(); });
     return;
@@ -1287,16 +1325,16 @@ document.addEventListener('click', e => {
   if (e.target.closest('[data-chiudi]') || e.target === $overlay) { chiudiSnap(); return; }
   if (e.target.id === 'esporta') { esporta(); return; }
 
+  /* carica al primo tocco; l'avviso offre Annulla per qualche secondo */
   const carica = e.target.closest('[data-carica]');
   if (carica) {
-    conferma(carica, 'Confermi?', () => {
-      const id = carica.dataset.carica;
-      const s = id === 'corrente' ? correnteRemoto && { nome: 'stato corrente sincronizzato', stato: correnteRemoto.stato } : lista().find(x => x.id === id);
-      if (!s) return;
-      stato = clona(s.stato);
-      disegna(); salvaSubito(); chiudiSnap();
-      avviso(`Caricato: ${s.nome || 'senza nome'}`);
-    });
+    const id = carica.dataset.carica;
+    const s = id === 'corrente' ? correnteRemoto && { nome: 'stato corrente sincronizzato', stato: correnteRemoto.stato } : lista().find(x => x.id === id);
+    if (!s) return;
+    const prima = clona(stato);
+    stato = clona(s.stato);
+    disegna(); salvaSubito(); chiudiSnap();
+    avviso(`Caricato: ${s.nome || 'senza nome'}`, 'Annulla', () => { stato = prima; disegna(); salvaSubito(); avviso('Ripristinato'); });
     return;
   }
   const sovrascrivi = e.target.closest('[data-sovrascrivi]');
