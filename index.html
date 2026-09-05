@@ -228,11 +228,15 @@
   .totrow .grp.p span { color: var(--piano); }
   .totrow .grp.l span { color: var(--live); }
 
-  .add {
-    margin-top: 11px; font-size: 13px; color: var(--text-3);
-    background: none; border: none; padding: 0; cursor: pointer; font-family: inherit;
+  /* numero di slot per reparto, in Impostazioni */
+  .slotcfg { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; padding: 8px 0 4px; }
+  .slotcfg label { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; }
+  .slotcfg input {
+    width: 100%; height: 38px; border: none; outline: none; border-radius: 8px; text-align: center;
+    background: var(--field); color: var(--text-1); font: inherit; font-size: 16px; font-weight: 500;
+    box-shadow: inset 0 0 0 1px var(--edge); font-variant-numeric: tabular-nums;
   }
-  .add:hover { color: var(--text-1); }
+  .slotcfg input:focus { box-shadow: inset 0 0 0 1.5px var(--piano); }
 
   /* ——— pannello salvataggi ——— */
   .overlay {
@@ -380,7 +384,6 @@
     .grid { grid-template-columns: 1fr; gap: 16px; }
     .block:not(.on) { display: none; }
     .rname { font-size: 16px; }
-    .add { height: 40px; }
 
     .overlay { align-items: flex-end; padding: 0; }
     .sheet { max-height: 88vh; border-radius: 16px 16px 0 0; padding-bottom: calc(18px + env(safe-area-inset-bottom)); }
@@ -593,6 +596,10 @@ function pannelloImpostazioni() {
       <span class="rk">BUDGET</span>
       <input class="budget" inputmode="decimal" aria-label="Budget" value="${cr(stato.budget)}">
     </div>
+    <div class="riga" style="padding-bottom:0"><span class="rk">GIOCATORI PER REPARTO</span></div>
+    <div class="slotcfg">${stato.ruoli.map((r, i) => `
+      <label style="color:${r.hex}">${r.ini}<input class="nslot" data-r="${i}" inputmode="numeric" pattern="[0-9]*" aria-label="Slot ${r.nome}" value="${r.slot.length}"></label>`).join('')}
+    </div>
 
     <div class="sez">STRATEGIE</div>
     <button class="voce primaria" data-az="salva">
@@ -715,7 +722,6 @@ function blocco(ri) {
         ${tot('p')}${tot('l')}
       </div>
     </div>
-    <button class="add" data-add="${ri}">+ Aggiungi slot</button>
   </div>`;
 }
 
@@ -1185,11 +1191,35 @@ function scriviAttuale() {
   document.querySelectorAll('[data-az="cestina"]').forEach(b => { b.disabled = !attuale; });
 }
 
+/* cambia il numero di slot di un reparto. Se si riduce, toglie prima gli slot vuoti dal fondo;
+   se tocca eliminare slot con valori lo dice. */
+function ridimensiona(ri, n) {
+  const r = stato.ruoli[ri];
+  if (n === r.slot.length) return;
+  let persi = 0;
+  while (r.slot.length < n) r.slot.push({ p: null, l: null });
+  while (r.slot.length > n) {
+    let i = r.slot.length - 1;
+    while (i >= 0 && (r.slot[i].p !== null || r.slot[i].l !== null)) i--;
+    if (i < 0) { i = r.slot.length - 1; persi++; }
+    r.slot.splice(i, 1);
+  }
+  if (reparto >= stato.ruoli.length) reparto = 0;
+  disegna(); salva();
+  if (persi) avviso(persi === 1 ? `${r.nome}: tolto 1 slot con valori` : `${r.nome}: tolti ${persi} slot con valori`);
+}
+
 /* ——— eventi ——— */
 const timerRinomina = new Map();
 document.addEventListener('input', e => {
   const el = e.target;
   if (el.classList.contains('budget')) { stato.budget = num(el.value) ?? 0; aggiorna(el); salva(); return; }
+  if (el.classList.contains('nslot')) {
+    const n = parseInt(el.value, 10);
+    if (!Number.isInteger(n) || n < 1 || n > 30) return;   // mentre si scrive può essere vuoto: si aspetta
+    ridimensiona(+el.dataset.r, n);
+    return;
+  }
   if (el.dataset.rinomina !== undefined) {
     const s = lista().find(x => x.id === el.dataset.rinomina);
     if (!s) return;
@@ -1220,8 +1250,6 @@ document.addEventListener('keydown', e => {
 });
 
 document.addEventListener('click', e => {
-  const add = e.target.closest('[data-add]');
-  if (add) { stato.ruoli[+add.dataset.add].slot.push({ p: null, l: null }); disegna(); salva(); return; }
 
   const un = e.target.closest('[data-unita]');
   if (un) {
