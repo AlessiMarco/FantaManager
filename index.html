@@ -104,13 +104,12 @@
   .th { padding-bottom: 8px; border-bottom: 1px solid var(--edge); margin-bottom: 4px; }
   .th .rn { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; }
   .th .rn.tot { color: var(--text-4); font-weight: 400; letter-spacing: 0.1em; }
-  .tg { display: inline-flex; gap: 2px; padding: 2px; border-radius: 7px; background: rgba(255,255,255,0.05); box-shadow: inset 0 0 0 1px var(--edge); }
-  .tg button {
-    min-width: 30px; height: 22px; padding: 0 7px; border-radius: 5px; border: none; cursor: pointer;
-    font: inherit; font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
-    background: none; color: var(--text-4);
+  .tg {
+    min-width: 38px; height: 26px; padding: 0 9px; border-radius: 7px; cursor: pointer;
+    font: inherit; font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
+    color: var(--text-1); background: rgba(255,255,255,0.08); border: 1px solid var(--edge);
   }
-  .tg button.on { background: rgba(255,255,255,0.12); color: var(--text-1); }
+  .tg:hover { border-color: rgba(255,255,255,0.22); }
   .tb .rl { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; }
   .tb.p .rl { color: var(--piano); }
   .tb.l .rl { color: var(--live); }
@@ -551,10 +550,7 @@ function tabella() {
 
   return `<div class="card tabella">
     <div class="tr th">
-      <span class="tg" role="group" aria-label="Unità">
-        <button data-unita="cr" class="${unita === 'cr' ? 'on' : ''}">cr</button>
-        <button data-unita="pc" class="${unita === 'pc' ? 'on' : ''}">%</button>
-      </span>
+      <span><button class="tg" data-unita aria-label="Cambia unità fra crediti e percentuale">${unita === 'cr' ? 'cr' : '%'}</button></span>
       ${teste}
       <span class="n rn tot">TOT</span>
     </div>
@@ -970,9 +966,9 @@ document.addEventListener('click', e => {
 
   const un = e.target.closest('[data-unita]');
   if (un) {
-    unita = un.dataset.unita;
+    unita = unita === 'cr' ? 'pc' : 'cr';
     try { localStorage.setItem('asta.unita', unita); } catch (err) { /* niente */ }
-    document.querySelectorAll('[data-unita]').forEach(b => b.classList.toggle('on', b.dataset.unita === unita));
+    un.textContent = unita === 'cr' ? 'cr' : '%';
     aggiorna(); return;
   }
 
