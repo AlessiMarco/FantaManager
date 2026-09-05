@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<title>FantaManager</title>
+<style>
+  :root {
+    --bg: #000;
+    --field: #181b20;
+    --text-1: #f0f2f4;
+    --text-2: #c3c8ce;
+    --text-3: #a9afb6;
+    --text-4: #949aa1;
+    --hairline: rgba(255,255,255,0.13);
+    --edge: rgba(255,255,255,0.09);
+    --piano: #8b83e6;
+    --live: #35b1a4;
+    --neg: #e0655c;
+    --pos: #4cc38a;
+    --c1: 74px;   /* colonna reparto */
+    --cn: 70px;   /* colonne numeriche */
+    --gc: 16px;   /* gap fra colonne */
+    --padT: 20px; /* padding orizzontale della card tabella */
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text-1);
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased; padding: 26px 24px 60px;
+  }
+  .wrap { max-width: 1400px; margin: 0 auto; }
+
+  .summaries { display: flex; gap: 18px; margin-bottom: 22px; align-items: stretch; flex-wrap: wrap; }
+  .card {
+    border-radius: 12px; overflow: hidden;
+    background: rgba(255,255,255,0.045); box-shadow: inset 0 0 0 1px var(--edge);
+  }
+
+  /* label testuale dei crediti, eredita il colore del contesto */
+  .cr { font-size: 0.7em; letter-spacing: 0.03em; font-weight: 500; }
+
+  /* ——— colonna totali ——— */
+  .totali { flex: 0 0 320px; min-width: 280px; display: flex; flex-direction: column; padding: 15px 18px 14px; }
+  .k { display: block; font-size: 11px; color: var(--text-4); letter-spacing: 0.1em; }
+
+  .residuo .v {
+    display: flex; align-items: baseline; gap: 8px; margin-top: 5px;
+    font-size: 40px; font-weight: 400; letter-spacing: -0.025em; font-variant-numeric: tabular-nums;
+  }
+  .residuo .v .cr { font-size: 15px; color: var(--text-4); font-weight: 400; }
+  .rtop { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+  .max { text-align: right; padding-bottom: 5px; }
+  .max .mv {
+    display: flex; align-items: baseline; justify-content: flex-end; gap: 5px; margin-top: 3px;
+    font-size: 21px; font-weight: 500; letter-spacing: -0.015em; font-variant-numeric: tabular-nums;
+  }
+  .max .mv .cr { font-size: 12px; color: var(--text-4); font-weight: 400; }
+  .residuo .v.neg { color: var(--neg); }
+
+  .sep { height: 1px; background: var(--edge); margin: 13px 0 1px; }
+
+  .riga { display: flex; align-items: center; gap: 14px; padding: 8px 0; }
+  .riga .rk { font-size: 14px; color: var(--text-4); letter-spacing: 0.08em; }
+  .riga .rv { margin-left: auto; font-size: 15px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  input.budget {
+    margin-left: auto; width: 86px; height: 34px; border: none; outline: none; border-radius: 8px;
+    background: var(--field); color: var(--text-1); font: inherit; font-size: 16px;
+    font-weight: 500; text-align: center; padding: 0 8px; font-variant-numeric: tabular-nums;
+    box-shadow: inset 0 0 0 1px var(--edge);
+  }
+  input.budget:focus { box-shadow: inset 0 0 0 1.5px var(--piano); }
+
+  .track { height: 2px; border-radius: 1px; background: rgba(255,255,255,0.1); margin-bottom: 14px; }
+  .track i { display: block; height: 100%; border-radius: 1px; transition: width .18s; }
+  .totali .track { height: 3px; border-radius: 2px; margin: 3px 0 0; }
+
+  .azioni { margin-top: auto; padding-top: 16px; display: flex; gap: 10px; align-items: center; }
+  .azioni button { height: 38px; border-radius: 10px; cursor: pointer; font: inherit; font-size: 14px; }
+  #salva, #apriSnap {
+    color: var(--text-1); background: rgba(255,255,255,0.05); border: 1px solid var(--edge); padding: 0 14px;
+  }
+  #salva { flex: 1; }
+  #salva:hover, #apriSnap:hover { border-color: rgba(255,255,255,0.2); }
+  #salva.ok { color: var(--live); border-color: rgba(53,177,164,0.45); }
+  #apriSnap b { font-weight: 500; color: var(--text-4); margin-left: 4px; font-variant-numeric: tabular-nums; }
+  #azzera { border: none; background: none; color: var(--text-4); padding: 0 10px; }
+  #azzera.att { color: var(--neg); }
+  #azzera:hover { color: var(--neg); }
+
+  /* ——— tabella riepilogo ——— */
+  .tabella { flex: 0 1 auto; min-width: 0; padding: 14px var(--padT) 10px; position: relative; }
+  /* pipe divisoria, centrata nel gap fra la sezione strategia e la sezione live */
+  .tabella > .pipe {
+    position: absolute; top: 14px; bottom: 10px; width: 1px; background: var(--hairline);
+    left: calc(var(--padT) + var(--c1) + var(--cn) * 2 + var(--gc) * 2.5);
+  }
+  .tr {
+    display: grid; align-items: center;
+    grid-template-columns: var(--c1) repeat(5, var(--cn));
+    column-gap: var(--gc);
+  }
+  .tr .n { text-align: right; font-variant-numeric: tabular-nums; }
+  .tr .ruolo { font-size: 15px; font-weight: 500; letter-spacing: 0.04em; }
+
+  .th { padding-bottom: 4px; }
+  .th .gh {
+    font-size: 13px; font-weight: 600; letter-spacing: 0.14em;
+    padding-bottom: 7px; border-bottom: 1px solid var(--edge);
+  }
+  .th .gh.p { grid-column: 2 / span 2; color: var(--piano); border-bottom-color: rgba(139,131,230,0.5); }
+  .th .gh.l { grid-column: 4 / span 2; color: var(--live);  border-bottom-color: rgba(53,177,164,0.5); }
+  .th .gh.d { grid-column: 6; color: var(--text-4); text-align: right; }
+
+  .sub { padding: 8px 0 2px; }
+  .sub .n { font-size: 12px; color: var(--text-4); letter-spacing: 0.03em; }
+
+  .tb .n { font-size: 16px; padding: 8px 0; }
+  .tb .cv { color: var(--text-1); font-weight: 500; }
+  .tb .pv { color: var(--text-3); }
+  .tb .delta { color: var(--text-4); font-size: 15px; }
+  .tb .delta.su { color: var(--neg); }
+  .tb .delta.giu { color: var(--pos); }
+
+  .tot { border-top: 1px solid var(--edge); }
+  .tot .ruolo { color: var(--text-4); letter-spacing: 0.1em; font-weight: 400; }
+  .tot .p-v { color: var(--piano); }
+  .tot .l-v { color: var(--live); }
+
+  /* ——— torta ——— */
+  .torta { flex: 1 1 400px; min-width: 300px; max-width: 500px; padding: 14px 18px 12px; display: flex; flex-direction: column; position: relative; }
+  .torta svg [data-fetta] { transition: transform .13s ease, filter .13s ease; cursor: pointer; }
+  .torta svg [data-fetta].su { filter: brightness(1.13); transform: translateY(-3px); }
+  .tip {
+    position: absolute; z-index: 5; pointer-events: none;
+    display: flex; align-items: center; gap: 8px; white-space: nowrap;
+    padding: 6px 10px; border-radius: 8px; font-size: 12px; color: var(--text-2);
+    background: #12151a; box-shadow: 0 6px 18px rgba(0,0,0,0.55), inset 0 0 0 1px var(--edge);
+  }
+  .tip[hidden] { display: none; }
+  .tip i { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+  .tip b { color: var(--text-1); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .tip em { font-style: normal; color: var(--text-4); font-variant-numeric: tabular-nums; }
+  .tabs { display: flex; gap: 6px; }
+  .tabs button {
+    flex: 1; padding: 7px 0; border-radius: 7px; cursor: pointer; font: inherit;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
+    background: none; border: 1px solid var(--edge); color: var(--text-4);
+  }
+  .tabs button:hover { color: var(--text-2); }
+  .tabs button.on[data-vista="p"] { color: var(--piano); border-color: rgba(139,131,230,0.5); background: rgba(139,131,230,0.13); }
+  .tabs button.on[data-vista="l"] { color: var(--live);  border-color: rgba(53,177,164,0.5);  background: rgba(53,177,164,0.13); }
+  .tbody { display: flex; align-items: center; gap: 16px; margin-top: auto; flex-wrap: wrap; }
+  .torta svg { display: block; flex: 1 1 220px; min-width: 200px; max-width: 300px; }
+  .leg { flex: 0 0 158px; display: flex; flex-direction: column; gap: 7px; }
+  .leg div {
+    display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-3);
+    padding: 3px 5px; margin: -3px -5px; border-radius: 6px; transition: background .13s; cursor: pointer;
+  }
+  .leg div.su { background: rgba(255,255,255,0.06); }
+  .leg .cr { color: var(--text-4); }
+  .leg i { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+  .leg b { margin-left: auto; color: var(--text-2); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .leg em { font-style: normal; color: var(--text-4); font-variant-numeric: tabular-nums; min-width: 40px; text-align: right; }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0;
+  }
+
+  /* ——— barra mobile (nascosta su desktop) ——— */
+  .mbar { display: none; }
+
+  /* ——— reparti ——— */
+  .grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 24px; align-items: start; }
+  @media (max-width: 1160px) { .grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+
+  .bhead { display: flex; align-items: baseline; gap: 9px; margin-bottom: 8px; }
+  .rname { font-size: 15px; font-weight: 500; letter-spacing: 0.04em; }
+  .slots { margin-left: auto; font-size: 12px; color: var(--text-4); }
+  .slots b { color: var(--text-2); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+  .cols { display: grid; grid-template-columns: 26px minmax(0,1fr) minmax(0,1fr); gap: 8px; }
+  .panel {
+    border-radius: 10px; padding: 0 8px 8px; min-width: 0; overflow: hidden;
+    background: rgba(255,255,255,0.045); box-shadow: inset 0 0 0 1px var(--edge);
+  }
+  .plab {
+    display: block; text-align: center; font-size: 12px; letter-spacing: 0.12em; font-weight: 600;
+    margin: 0 -8px 9px; padding: 8px 0; border-bottom: 1px solid var(--edge);
+  }
+  .panel.p .plab { color: var(--piano); background: rgba(139,131,230,0.13); }
+  .panel.l .plab { color: var(--live);  background: rgba(53,177,164,0.13); }
+  .pcols { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 7px; }
+  .pcols span {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: var(--text-4); letter-spacing: 0.03em;
+  }
+
+  .labels { display: flex; flex-direction: column; }
+  .labels .spacer { height: 57px; }
+  .labels > span { height: 36px; margin-bottom: 7px; display: flex; align-items: center; font-size: 12px; font-weight: 500; }
+  .labels .tl { color: var(--text-4); font-weight: 400; margin-bottom: 0; height: 40px; align-items: flex-end; padding-bottom: 9px; }
+
+  .prow { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 7px; }
+  .fw { position: relative; min-width: 0; }
+  .ph {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    pointer-events: none; opacity: 0.16; transition: opacity .12s;
+    font-size: 15px; color: var(--text-4); letter-spacing: 0.03em;
+  }
+  input.f:not(:placeholder-shown) ~ .ph { opacity: 0; }
+  input.f {
+    height: 36px; width: 100%; border: none; outline: none; border-radius: 8px;
+    background: var(--field); color: var(--text-1);
+    font: inherit; font-size: 16px; text-align: center; padding: 0 6px;
+    font-variant-numeric: tabular-nums;
+  }
+  .panel.p input.f:focus { box-shadow: inset 0 0 0 1.5px var(--piano); }
+  .panel.l input.f:focus { box-shadow: inset 0 0 0 1.5px var(--live); }
+
+  .totrow {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    margin-top: 3px; padding-top: 10px; border-top: 1px solid var(--edge);
+  }
+  .totrow span {
+    height: 28px; display: flex; align-items: baseline; justify-content: center; gap: 4px;
+    font-size: 16px; font-weight: 500; font-variant-numeric: tabular-nums;
+  }
+  .panel.p .totrow span { color: var(--piano); }
+  .panel.l .totrow span { color: var(--live); }
+
+  .add {
+    margin-top: 11px; font-size: 13px; color: var(--text-3);
+    background: none; border: none; padding: 0; cursor: pointer; font-family: inherit;
+  }
+  .add:hover { color: var(--text-1); }
+
+  /* ——— pannello salvataggi ——— */
+  .overlay {
+    position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.72);
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  .overlay[hidden] { display: none; }
+  .sheet {
+    width: 100%; max-width: 560px; max-height: 85vh; overflow: auto;
+    background: #0f1115; border-radius: 14px; box-shadow: inset 0 0 0 1px var(--edge);
+    padding: 16px 18px 18px;
+  }
+  .shead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .stit { font-size: 15px; font-weight: 500; letter-spacing: 0.04em; }
+  .sbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .nota { font-size: 12px; color: var(--text-4); margin: 0 0 8px; line-height: 1.45; }
+  .vuoto { font-size: 13px; color: var(--text-4); margin: 18px 0 8px; text-align: center; }
+  .btn {
+    height: 32px; padding: 0 12px; border-radius: 8px; cursor: pointer; font: inherit; font-size: 13px;
+    color: var(--text-1); background: rgba(255,255,255,0.06); border: 1px solid var(--edge);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn:hover { border-color: rgba(255,255,255,0.2); }
+  .btn.ghost { background: none; color: var(--text-4); }
+  .btn.ghost:hover { color: var(--text-2); }
+  .btn.att { color: var(--neg); border-color: rgba(224,101,92,0.5); }
+  .btn.ok  { color: var(--live); border-color: rgba(53,177,164,0.5); }
+  .snap {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 4px 10px; align-items: center;
+    padding: 10px 0; border-top: 1px solid var(--edge);
+  }
+  .snap:first-of-type { border-top: none; }
+  .snome {
+    grid-column: 1; min-width: 0; height: 30px; padding: 0 8px; margin-left: -8px; border-radius: 7px;
+    border: none; outline: none; background: none; color: var(--text-1); font: inherit; font-size: 14px; font-weight: 500;
+  }
+  .snome:hover { background: rgba(255,255,255,0.04); }
+  .snome:focus { background: var(--field); box-shadow: inset 0 0 0 1.5px var(--piano); }
+  .smeta { grid-column: 1; font-size: 12px; color: var(--text-4); font-variant-numeric: tabular-nums; }
+  .sazioni { grid-column: 2; grid-row: 1 / span 2; display: flex; gap: 6px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 60;
+    padding: 9px 14px; border-radius: 9px; font-size: 13px; color: var(--text-1);
+    background: #1a1e24; box-shadow: 0 8px 24px rgba(0,0,0,0.6), inset 0 0 0 1px var(--edge);
+    white-space: nowrap; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis;
+  }
+  .toast[hidden] { display: none; }
+
+  /* ——— telefono ——— */
+  @media (max-width: 720px) {
+    :root { --padT: 12px; }
+    body { padding: 12px 12px calc(40px + env(safe-area-inset-bottom)); }
+    .summaries { flex-direction: column; gap: 12px; margin-bottom: 12px; }
+    .totali { flex: none; min-width: 0; width: 100%; padding: 14px 16px 14px; }
+    .torta { flex: none; min-width: 0; max-width: none; }
+    .torta svg { flex: 0 0 auto; width: 250px; max-width: 100%; margin: 0 auto; }
+    .leg { flex: 1 1 100%; }
+    .tbody { margin-top: 12px; }
+    .residuo .v { font-size: 36px; }
+
+    .tabella .pipe { display: none; }
+    .tr { grid-template-columns: 40px repeat(5, minmax(0,1fr)); column-gap: 5px; }
+    .tr .ruolo { font-size: 13px; }
+    .th .gh { font-size: 11px; letter-spacing: 0.1em; }
+    .sub .n { font-size: 11px; }
+    .tb .n { font-size: 13px; padding: 7px 0; }
+    .tb .delta { font-size: 13px; }
+
+    .mbar {
+      display: block; position: sticky; top: 0; z-index: 20;
+      margin: 0 -12px 12px; padding: 8px 12px 10px; background: rgba(0,0,0,0.92);
+      -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--edge);
+    }
+    .mres { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-4); letter-spacing: 0.08em; margin-bottom: 8px; }
+    .mres b { color: var(--text-1); font-weight: 500; font-size: 15px; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+    .mres b.neg { color: var(--neg); }
+    .mtabs { display: flex; gap: 6px; }
+    .mtab {
+      flex: 1; height: 44px; border-radius: 9px; cursor: pointer; font: inherit;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+      font-size: 12px; font-weight: 600; letter-spacing: 0.1em;
+      background: none; border: 1px solid var(--edge); color: var(--text-4);
+    }
+    .mtab small { font-size: 11px; font-weight: 400; letter-spacing: 0; color: var(--text-4); font-variant-numeric: tabular-nums; }
+    .mtab.on { color: var(--hex); border-color: var(--hex); background: color-mix(in srgb, var(--hex) 14%, transparent); }
+    .mtab.on small { color: var(--text-2); }
+
+    .grid { grid-template-columns: 1fr; gap: 16px; }
+    .block:not(.on) { display: none; }
+    .rname { font-size: 16px; }
+    .add { height: 40px; }
+
+    .overlay { align-items: flex-end; padding: 0; }
+    .sheet { max-height: 88vh; border-radius: 16px 16px 0 0; padding-bottom: calc(18px + env(safe-area-inset-bottom)); }
+    .btn { height: 36px; }
+    .sazioni { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="summaries" id="sums"></div>
+  <div id="mbar"></div>
+  <div class="grid" id="grid"></div>
+</div>
+<div class="overlay" id="overlay" hidden></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const CHIAVE = 'asta.v1';        // copia di lavoro, salvata in automatico
+const CHIAVE_SNAP = 'asta.snap.v1'; // salvataggi con nome e data
+const CR = '<span class="cr">cr</span>';
+
+/* ——— stato: i crediti del singolo slot sono la fonte di verità ——— */
+const nuovi = n => Array.from({length: n}, () => ({ p: null, l: null }));
+const iniziale = () => ({
+  budget: 500,
+  ruoli: [
+    { nome:'POR', ini:'P', hex:'#e0a54a', slot: nuovi(3) },
+    { nome:'DIF', ini:'D', hex:'#5cba85', slot: nuovi(8) },
+    { nome:'CEN', ini:'C', hex:'#6b9ee0', slot: nuovi(8) },
+    { nome:'ATT', ini:'A', hex:'#e0655c', slot: nuovi(6) },
+  ]
+});
+
+/* ——— numeri ——— */
+const num = v => {
+  if (v === null || v === undefined) return null;
+  const s = String(v).replace('%','').replace(',','.').trim();
+  if (s === '') return null;
+  const n = parseFloat(s);
+  return isNaN(n) ? null : n;
+};
+const cr = v => v === null ? '' : (Math.round(v * 10) / 10).toString().replace('.', ',');
+/* intero se non serve il decimale, altrimenti un decimale con la virgola */
+const pcFmt = v => {
+  if (v === null) return '';
+  const r = Math.round(v * 10) / 10;
+  return (Number.isInteger(r) ? String(r) : r.toFixed(1).replace('.', ',')) + '%';
+};
+const somma = (r, k) => r.slot.reduce((a, s) => a + (s[k] ?? 0), 0);
+const pieni = (r, k) => r.slot.filter(s => s[k] !== null).length;
+const quota = v => stato.budget > 0 ? (v / stato.budget) * 100 : 0;
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const clona = o => JSON.parse(JSON.stringify(o));
+
+/* Rende sicuro uno stato letto da fuori (localStorage o file importato):
+   tiene solo i campi che conosciamo e forza i numeri. Torna null se non è uno stato. */
+function pulisci(s) {
+  if (!s || !Array.isArray(s.ruoli) || s.ruoli.length === 0) return null;
+  const base = iniziale();
+  return {
+    budget: num(s.budget) ?? 0,
+    ruoli: s.ruoli.map((r, i) => ({
+      nome: String(r.nome ?? base.ruoli[i]?.nome ?? '?').slice(0, 6),
+      ini:  String(r.ini ?? (r.nome ?? '?')[0]).slice(0, 2),
+      hex:  /^#[0-9a-f]{6}$/i.test(r.hex) ? r.hex : (base.ruoli[i]?.hex ?? '#888888'),
+      slot: (Array.isArray(r.slot) && r.slot.length ? r.slot : nuovi(1)).map(x => ({ p: num(x?.p), l: num(x?.l) })),
+    })),
+  };
+}
+
+let stato = iniziale();
+try {
+  const salvato = pulisci(JSON.parse(localStorage.getItem(CHIAVE)));
+  if (salvato) stato = salvato;
+} catch (e) { /* si riparte da zero */ }
+
+let snap = [];
+try {
+  const lista = JSON.parse(localStorage.getItem(CHIAVE_SNAP) || '[]');
+  if (Array.isArray(lista)) snap = lista.map(x => ({
+    id: String(x.id), nome: String(x.nome ?? ''), data: String(x.data ?? ''), stato: pulisci(x.stato)
+  })).filter(x => x.stato);
+} catch (e) { snap = []; }
+
+function salvaSubito() {
+  try { localStorage.setItem(CHIAVE, JSON.stringify(stato)); } catch (e) { /* modalità privata */ }
+}
+let timerSalva;
+function salva() {
+  clearTimeout(timerSalva);
+  timerSalva = setTimeout(salvaSubito, 350);
+}
+function salvaSnap() {
+  try { localStorage.setItem(CHIAVE_SNAP, JSON.stringify(snap)); } catch (e) { avviso('Spazio pieno: salvataggio non riuscito'); }
+}
+
+const $sums = document.getElementById('sums');
+const $mbar = document.getElementById('mbar');
+const $grid = document.getElementById('grid');
+const $overlay = document.getElementById('overlay');
+const $toast = document.getElementById('toast');
+const set = (sel, txt) => { const el = document.querySelector(sel); if (el) el.textContent = txt; };
+
+let timerToast;
+function avviso(testo) {
+  $toast.textContent = testo; $toast.hidden = false;
+  clearTimeout(timerToast);
+  timerToast = setTimeout(() => { $toast.hidden = true; }, 2200);
+}
+
+/* ——— render ——— */
+function colonnaTotali() {
+  return `<div class="card totali">
+    <div class="residuo rtop">
+      <div>
+        <span class="k">RESIDUO</span>
+        <span class="v"><b id="residuo">0</b>${CR}</span>
+      </div>
+      <div class="max">
+        <span class="k">OFFERTA MAX</span>
+        <span class="mv"><b id="offMax">0</b>${CR}</span>
+      </div>
+    </div>
+    <div class="sep"></div>
+    <div class="riga">
+      <span class="rk">BUDGET</span>
+      <input class="budget" id="budget" inputmode="decimal" value="${cr(stato.budget)}">
+    </div>
+    <div class="riga">
+      <span class="rk">SLOT</span>
+      <span class="rv" id="slotTot">0 / 25</span>
+    </div>
+    <div class="track"><i id="trackTot" style="width:0%;background:var(--live)"></i></div>
+    <div class="azioni">
+      <button id="salva">Salva</button>
+      <button id="apriSnap">Salvataggi<b id="nSnap">${snap.length}</b></button>
+      <button id="azzera">Azzera</button>
+    </div>
+  </div>`;
+}
+
+function tabella() {
+  const righe = stato.ruoli.map((r, i) => `
+    <div class="tr tb">
+      <span class="ruolo" style="color:${r.hex}">${r.nome}</span>
+      <span class="n cv" data-sum-cr="p-${i}">0</span>
+      <span class="n pv" data-sum-pc="p-${i}">0%</span>
+      <span class="n cv" data-sum-cr="l-${i}">0</span>
+      <span class="n pv" data-sum-pc="l-${i}">0%</span>
+      <span class="n delta" data-delta="${i}">—</span>
+    </div>`).join('');
+
+  return `<div class="card tabella">
+    <div class="pipe"></div>
+    <div class="tr th">
+      <span></span>
+      <span class="gh p">STRATEGIA</span>
+      <span class="gh l">LIVE</span>
+      <span class="gh d">DELTA<span class="sr-only">: live meno strategia, in crediti</span></span>
+    </div>
+    <div class="tr sub">
+      <span></span>
+      <span class="n">cr</span><span class="n">%</span>
+      <span class="n">cr</span><span class="n">%</span>
+      <span></span>
+    </div>
+    ${righe}
+    <div class="tr tb tot">
+      <span class="ruolo">TOT</span>
+      <span class="n cv p-v" data-tot="p">0</span>
+      <span class="n pv p-v" data-totpc="p">0%</span>
+      <span class="n cv l-v" data-tot="l">0</span>
+      <span class="n pv l-v" data-totpc="l">0%</span>
+      <span class="n delta" data-delta="tot">—</span>
+    </div>
+  </div>`;
+}
+
+let vista = 'p';                                   // quale serie mostra la torta
+let reparto = 0;                                   // reparto visibile sul telefono
+
+function scuro(hex, f) {
+  const n = parseInt(hex.slice(1), 16);
+  return '#' + [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+    .map(v => Math.round(v * f).toString(16).padStart(2, '0')).join('');
+}
+
+function chiaro(hex, f) {
+  const n = parseInt(hex.slice(1), 16);
+  return '#' + [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+    .map(v => Math.round(v + (255 - v) * f).toString(16).padStart(2, '0')).join('');
+}
+
+let datiTorta = [];
+
+function torta() {
+  const dati = stato.ruoli.map(r => ({ nome: r.nome, hex: r.hex, v: somma(r, vista) }));
+  const tot = dati.reduce((a, d) => a + d.v, 0);
+  dati.forEach(d => { d.pc = tot > 0 ? pcFmt((d.v / tot) * 100) : '—'; });
+  datiTorta = dati;
+
+  const cx = 150, cy = 62, rx = 104, ry = 50, prof = 26;
+  const P = a => [cx + rx * Math.cos(a), cy + ry * Math.sin(a)];
+  const f1 = n => n.toFixed(1);
+  const bordo = 'stroke="rgba(0,0,0,0.45)" stroke-width="1.1" stroke-linejoin="round"';
+
+  const defs = dati.map((d, i) => `
+    <linearGradient id="gt${i}" x1="0.15" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="${chiaro(d.hex, 0.32)}"/><stop offset="1" stop-color="${d.hex}"/>
+    </linearGradient>
+    <linearGradient id="gw${i}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${scuro(d.hex, 0.72)}"/><stop offset="1" stop-color="${scuro(d.hex, 0.4)}"/>
+    </linearGradient>`).join('');
+
+  let muri = '', facce = '';
+  if (tot > 0) {
+    let a = -Math.PI / 2;
+    dati.forEach((d, i) => {
+      if (d.v <= 0) return;
+      const ang = (d.v / tot) * Math.PI * 2;
+      const a0 = a, a1 = a + ang; a = a1;
+      const [x0, y0] = P(a0), [x1, y1] = P(a1);
+      const g = ang > Math.PI ? 1 : 0;
+
+      facce += ang >= Math.PI * 2 - 1e-9
+        ? `<ellipse data-fetta="${i}" cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#gt${i})" ${bordo}/>`
+        : `<path data-fetta="${i}" d="M${cx} ${cy}L${f1(x0)} ${f1(y0)}A${rx} ${ry} 0 ${g} 1 ${f1(x1)} ${f1(y1)}Z" fill="url(#gt${i})" ${bordo}/>`;
+
+      // parete: solo la porzione di arco rivolta verso di noi
+      const b0 = Math.max(a0, 0), b1 = Math.min(a1, Math.PI);
+      if (b1 > b0) {
+        const [mx0, my0] = P(b0), [mx1, my1] = P(b1);
+        const gm = (b1 - b0) > Math.PI ? 1 : 0;
+        muri += `<path data-fetta="${i}" d="M${f1(mx0)} ${f1(my0)}A${rx} ${ry} 0 ${gm} 1 ${f1(mx1)} ${f1(my1)}`
+             +  `L${f1(mx1)} ${f1(my1 + prof)}A${rx} ${ry} 0 ${gm} 0 ${f1(mx0)} ${f1(my0 + prof)}Z" fill="url(#gw${i})" ${bordo}/>`;
+      }
+    });
+  } else {
+    muri = `<path d="M${cx - rx} ${cy}A${rx} ${ry} 0 0 0 ${cx + rx} ${cy}L${cx + rx} ${cy + prof}`
+         + `A${rx} ${ry} 0 0 1 ${cx - rx} ${cy + prof}Z" fill="rgba(255,255,255,0.05)"/>`;
+    facce = `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="rgba(255,255,255,0.05)"
+      stroke="rgba(255,255,255,0.16)" stroke-dasharray="4 5"/>`;
+  }
+
+  const legenda = dati.map((d, i) => `<div data-fetta="${i}">
+    <i style="background:${d.hex}"></i>${d.nome}
+    <b>${cr(d.v) || '0'} <span class="cr">cr</span></b><em>${d.pc}</em>
+  </div>`).join('');
+
+  return `<div class="card torta">
+    <div class="tabs">
+      <button data-vista="p" class="${vista === 'p' ? 'on' : ''}">STRATEGIA</button>
+      <button data-vista="l" class="${vista === 'l' ? 'on' : ''}">LIVE</button>
+    </div>
+    <div class="tbody">
+    <svg viewBox="0 0 300 152" role="img" aria-label="Ripartizione ${vista === 'p' ? 'strategia' : 'live'} per reparto">
+      <defs>${defs}
+        <filter id="ombra" x="-25%" y="-25%" width="150%" height="180%">
+          <feGaussianBlur stdDeviation="7"/>
+        </filter>
+      </defs>
+      <ellipse cx="${cx}" cy="${cy + prof + 6}" rx="${rx * 0.9}" ry="${ry * 0.5}" fill="rgba(0,0,0,0.55)" filter="url(#ombra)"/>
+      ${muri}${facce}
+    </svg>
+      <div class="leg">${legenda}</div>
+    </div>
+    <div class="tip" hidden></div>
+  </div>`;
+}
+
+/* barra fissa in alto sul telefono: residuo, offerta max e schede dei reparti */
+function barraMobile() {
+  return `<div class="mbar">
+    <div class="mres">
+      <span>RESIDUO <b id="mRes">0</b> cr</span>
+      <span>MAX <b id="mMax">0</b> cr</span>
+    </div>
+    <div class="mtabs">${stato.ruoli.map((r, i) => `
+      <button class="mtab ${i === reparto ? 'on' : ''}" data-reparto="${i}" style="--hex:${r.hex}">
+        ${r.nome}<small data-mslot="${i}">0/${r.slot.length}</small>
+      </button>`).join('')}
+    </div>
+  </div>`;
+}
+
+function pannello(cls, lab, ri, campo) {
+  const r = stato.ruoli[ri];
+  const righe = r.slot.map((s, si) => `
+    <div class="prow">
+      <span class="fw">
+        <input class="f" placeholder=" " inputmode="decimal" data-r="${ri}" data-s="${si}" data-k="${campo}" data-t="cr" value="${cr(s[campo])}">
+        <span class="ph">cr</span>
+      </span>
+      <span class="fw">
+        <input class="f" placeholder=" " inputmode="decimal" data-r="${ri}" data-s="${si}" data-k="${campo}" data-t="pc" value="${s[campo] === null ? '' : pcFmt(quota(s[campo]))}">
+        <span class="ph">%</span>
+      </span>
+    </div>`).join('');
+
+  return `<div class="panel ${cls}">
+    <span class="plab">${lab}</span>
+    <div class="pcols"><span>cr</span><span>%</span></div>
+    ${righe}
+    <div class="totrow">
+      <span><b data-rtot-cr="${campo}-${ri}">0</b>${CR}</span>
+      <span data-rtot-pc="${campo}-${ri}">0%</span>
+    </div>
+  </div>`;
+}
+
+function blocco(ri) {
+  const r = stato.ruoli[ri];
+  const et = '<div class="spacer"></div>'
+    + r.slot.map((_, i) => `<span style="color:${r.hex}">${r.ini}${i+1}</span>`).join('')
+    + '<span class="tl">tot</span>';
+  return `<div class="block ${ri === reparto ? 'on' : ''}" data-ri="${ri}">
+    <div class="bhead">
+      <span class="rname" style="color:${r.hex}">${r.nome}</span>
+      <span class="slots"><b data-slots="${ri}">0/${r.slot.length}</b> slot</span>
+    </div>
+    <div class="track"><i data-track="${ri}" style="width:0%;background:${r.hex}"></i></div>
+    <div class="cols">
+      <div class="labels">${et}</div>
+      ${pannello('p', 'STRATEGIA', ri, 'p')}
+      ${pannello('l', 'LIVE',      ri, 'l')}
+    </div>
+    <button class="add" data-add="${ri}">+ Aggiungi slot</button>
+  </div>`;
+}
+
+function disegna() {
+  if (reparto >= stato.ruoli.length) reparto = 0;
+  $sums.innerHTML = colonnaTotali() + tabella() + torta();
+  $mbar.innerHTML = barraMobile();
+  $grid.innerHTML = stato.ruoli.map((_, i) => blocco(i)).join('');
+  aggiorna();
+}
+
+/* ——— calcolo ——— */
+function scriviDelta(chiave, d, mostra) {
+  const el = document.querySelector(`[data-delta="${chiave}"]`);
+  if (!el) return;
+  el.textContent = mostra ? (d > 0 ? '+' : '') + (cr(d) || '0') : '—';
+  el.classList.toggle('su',  mostra && d > 0);
+  el.classList.toggle('giu', mostra && d < 0);
+}
+
+function aggiorna(escludi) {
+  let totP = 0, totL = 0, slotPieni = 0, slotTot = 0, usati = 0;
+  stato.ruoli.forEach((r, ri) => {
+    for (const k of ['p','l']) {
+      const s = somma(r, k);
+      if (k === 'p') totP += s; else totL += s;
+      usati += pieni(r, k);
+      set(`[data-rtot-cr="${k}-${ri}"]`, cr(s) || '0');
+      set(`[data-rtot-pc="${k}-${ri}"]`, pcFmt(quota(s)));
+      set(`[data-sum-cr="${k}-${ri}"]`, cr(s) || '0');
+      set(`[data-sum-pc="${k}-${ri}"]`, pcFmt(quota(s)));
+    }
+    scriviDelta(ri, somma(r,'l') - somma(r,'p'), pieni(r,'p') + pieni(r,'l') > 0);
+
+    const pn = pieni(r, 'l');
+    slotPieni += pn; slotTot += r.slot.length;
+    set(`[data-slots="${ri}"]`, `${pn}/${r.slot.length}`);
+    set(`[data-mslot="${ri}"]`, `${pn}/${r.slot.length}`);
+    const bar = document.querySelector(`[data-track="${ri}"]`);
+    if (bar) bar.style.width = Math.round((pn / r.slot.length) * 100) + '%';
+  });
+
+  set('[data-tot="p"]', cr(totP) || '0');
+  set('[data-tot="l"]', cr(totL) || '0');
+  set('[data-totpc="p"]', pcFmt(quota(totP)));
+  set('[data-totpc="l"]', pcFmt(quota(totL)));
+  scriviDelta('tot', totL - totP, usati > 0);
+
+  set('#slotTot', `${slotPieni} / ${slotTot}`);
+  const barTot = document.getElementById('trackTot');
+  if (barTot) barTot.style.width = (slotTot ? Math.round((slotPieni / slotTot) * 100) : 0) + '%';
+
+  const res = stato.budget - totL;                 // la live comanda il residuo
+
+  /* Offerta max: guarda solo la live. Quanto posso mettere su UN giocatore
+     tenendo 1 credito per ognuno degli ALTRI slot live ancora vuoti.
+     Se non resta nessuno slot vuoto non devo coprire piu' niente: e' tutto il residuo.
+     La strategia non entra nel calcolo. */
+  const vuoti = slotTot - slotPieni;
+  const offMax = cr(Math.max(0, Math.floor(res - Math.max(0, vuoti - 1)))) || '0';
+  set('#offMax', offMax);
+  set('#mMax', offMax);
+  const $r = document.getElementById('residuo');
+  if ($r) {
+    $r.textContent = cr(res) || '0';
+    $r.closest('.v').classList.toggle('neg', res < 0);
+  }
+  const $mr = document.getElementById('mRes');
+  if ($mr) { $mr.textContent = cr(res) || '0'; $mr.classList.toggle('neg', res < 0); }
+
+  const $t = document.querySelector('.torta');
+  if ($t) $t.outerHTML = torta();
+
+  document.querySelectorAll('input.f').forEach(el => {
+    if (el === escludi) return;
+    const v = stato.ruoli[+el.dataset.r].slot[+el.dataset.s][el.dataset.k];
+    el.value = el.dataset.t === 'cr' ? cr(v) : (v === null ? '' : pcFmt(quota(v)));
+  });
+}
+
+/* ——— salvataggi ——— */
+const nuovoId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const dataIt = iso => {
+  const d = new Date(iso);
+  return isNaN(d) ? '' : d.toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+};
+function riassunto(s) {
+  const live = s.ruoli.reduce((a, r) => a + somma(r, 'l'), 0);
+  const pn = s.ruoli.reduce((a, r) => a + pieni(r, 'l'), 0);
+  const tot = s.ruoli.reduce((a, r) => a + r.slot.length, 0);
+  return `${cr(live) || '0'} cr live · ${pn}/${tot} slot · budget ${cr(s.budget) || '0'}`;
+}
+function creaSnap(nome, s, data) {
+  snap.unshift({ id: nuovoId(), nome, data: data || new Date().toISOString(), stato: clona(s) });
+  salvaSnap();
+  set('#nSnap', snap.length);
+}
+
+function pannelloSnap() {
+  const lista = snap.length ? snap.map(s => `
+    <div class="snap" data-id="${s.id}">
+      <input class="snome" value="${esc(s.nome)}" data-rinomina="${s.id}" aria-label="Nome del salvataggio" placeholder="Senza nome">
+      <span class="smeta">${dataIt(s.data)} · ${riassunto(s.stato)}</span>
+      <div class="sazioni">
+        <button class="btn" data-carica="${s.id}">Carica</button>
+        <button class="btn ghost" data-elimina="${s.id}">Elimina</button>
+      </div>
+    </div>`).join('')
+    : '<p class="vuoto">Nessun salvataggio. Premi Salva per creare il primo.</p>';
+
+  return `<div class="sheet" role="dialog" aria-label="Salvataggi">
+    <div class="shead">
+      <span class="stit">Salvataggi</span>
+      <button class="btn ghost" id="chiudiSnap">Chiudi</button>
+    </div>
+    <div class="sbar">
+      <button class="btn" id="esporta">Esporta tutto</button>
+      <label class="btn" for="importa">Importa file</label>
+      <input type="file" id="importa" accept="application/json,.json" hidden>
+    </div>
+    <p class="nota">I salvataggi vivono nel browser di questo dispositivo. Per tenerne una copia o portarli su un altro dispositivo, esporta il file e importalo dall'altra parte.</p>
+    ${lista}
+  </div>`;
+}
+function apriSnap() { $overlay.innerHTML = pannelloSnap(); $overlay.hidden = false; }
+function chiudiSnap() { $overlay.hidden = true; $overlay.innerHTML = ''; }
+
+function esporta() {
+  const dati = { app: 'FantaManager', versione: 1, esportato: new Date().toISOString(), corrente: stato, salvataggi: snap };
+  const blob = new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  const d = new Date(), pad = n => String(n).padStart(2, '0');
+  a.href = URL.createObjectURL(blob);
+  a.download = `fantamanager-${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}.json`;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+
+function importa(file) {
+  const fr = new FileReader();
+  fr.onload = () => {
+    try {
+      const d = JSON.parse(fr.result);
+      let n = 0;
+      if (Array.isArray(d.salvataggi)) {
+        d.salvataggi.forEach(s => {
+          const st = pulisci(s.stato);
+          if (!st || snap.some(x => x.id === String(s.id))) return;
+          snap.push({ id: String(s.id || nuovoId()), nome: String(s.nome ?? 'Importato'), data: String(s.data || d.esportato || new Date().toISOString()), stato: st });
+          n++;
+        });
+      }
+      const corrente = pulisci(d.corrente) || (Array.isArray(d.salvataggi) ? null : pulisci(d));
+      if (corrente) {
+        snap.push({ id: nuovoId(), nome: 'Importato · stato corrente', data: String(d.esportato || new Date().toISOString()), stato: corrente });
+        n++;
+      }
+      if (n === 0) { avviso('Nessun salvataggio nuovo nel file'); return; }
+      snap.sort((a, b) => b.data.localeCompare(a.data));
+      salvaSnap(); set('#nSnap', snap.length); apriSnap();
+      avviso(n === 1 ? '1 salvataggio importato' : `${n} salvataggi importati`);
+    } catch (e) { avviso('File non valido'); }
+  };
+  fr.readAsText(file);
+}
+
+/* secondo click entro 4 secondi per confermare */
+const attese = new Map();
+function conferma(b, testo, fn) {
+  if (attese.has(b)) { clearTimeout(attese.get(b)); attese.delete(b); fn(); return; }
+  const orig = b.textContent;
+  b.textContent = testo; b.classList.add('att');
+  attese.set(b, setTimeout(() => {
+    attese.delete(b); b.textContent = orig; b.classList.remove('att');
+  }, 4000));
+}
+
+/* ——— eventi ——— */
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (el.id === 'budget') { stato.budget = num(el.value) ?? 0; aggiorna(el); salva(); return; }
+  if (el.dataset.rinomina) {
+    const s = snap.find(x => x.id === el.dataset.rinomina);
+    if (s) { s.nome = el.value; clearTimeout(timerSalva); timerSalva = setTimeout(salvaSnap, 350); }
+    return;
+  }
+  if (!el.classList.contains('f')) return;
+  const slot = stato.ruoli[+el.dataset.r].slot[+el.dataset.s];
+  const v = num(el.value);
+  slot[el.dataset.k] = v === null ? null
+    : (el.dataset.t === 'cr' ? v : (v / 100) * stato.budget);
+  aggiorna(el); salva();
+});
+
+document.addEventListener('blur', e => {
+  if (e.target.classList && e.target.classList.contains('f')) aggiorna();
+}, true);
+
+document.addEventListener('change', e => {
+  if (e.target.id === 'importa' && e.target.files[0]) importa(e.target.files[0]);
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !$overlay.hidden) chiudiSnap();
+});
+
+const conMouse = window.matchMedia('(hover: hover)').matches;
+let fettaSu = null;
+function evidenzia(card, i) {
+  fettaSu = i;
+  card.querySelectorAll('[data-fetta]').forEach(n => n.classList.toggle('su', n.dataset.fetta === i));
+}
+document.addEventListener('mousemove', e => {
+  if (!conMouse) return;
+  const card = document.querySelector('.torta');
+  if (!card) return;
+  const el = e.target.closest ? e.target.closest('[data-fetta]') : null;
+  const i = el && card.contains(el) ? el.dataset.fetta : null;
+
+  if (i !== fettaSu) evidenzia(card, i);
+  const tip = card.querySelector('.tip');
+  if (!tip) return;
+  if (i === null) { tip.hidden = true; return; }
+
+  const d = datiTorta[+i];
+  tip.innerHTML = `<i style="background:${d.hex}"></i>${d.nome}`
+    + `<b>${cr(d.v) || '0'} cr</b><em>${d.pc}</em>`;
+  tip.hidden = false;
+  const r = card.getBoundingClientRect();
+  tip.style.left = Math.max(6, Math.min(e.clientX - r.left + 14, r.width - tip.offsetWidth - 6)) + 'px';
+  tip.style.top  = Math.max(4, e.clientY - r.top - 12) + 'px';
+});
+
+document.addEventListener('click', e => {
+  const add = e.target.closest('[data-add]');
+  if (add) { stato.ruoli[+add.dataset.add].slot.push({ p: null, l: null }); disegna(); salva(); return; }
+
+  const tab = e.target.closest('[data-vista]');
+  if (tab) { vista = tab.dataset.vista; document.querySelector('.torta').outerHTML = torta(); return; }
+
+  const mtab = e.target.closest('[data-reparto]');
+  if (mtab) {
+    reparto = +mtab.dataset.reparto;
+    document.querySelectorAll('.mtab').forEach(b => b.classList.toggle('on', +b.dataset.reparto === reparto));
+    document.querySelectorAll('.block').forEach(b => b.classList.toggle('on', +b.dataset.ri === reparto));
+    return;
+  }
+
+  /* sul touch la fetta si evidenzia col tocco, un secondo tocco la spegne */
+  const fetta = e.target.closest('.torta [data-fetta]');
+  if (fetta && !conMouse) {
+    const card = fetta.closest('.torta');
+    evidenzia(card, fetta.classList.contains('su') ? null : fetta.dataset.fetta);
+    return;
+  }
+
+  if (e.target.id === 'salva') {
+    creaSnap(`Salvataggio ${snap.length + 1}`, stato);
+    salvaSubito();
+    const b = e.target;
+    b.textContent = 'Salvato'; b.classList.add('ok');
+    setTimeout(() => { b.textContent = 'Salva'; b.classList.remove('ok'); }, 1500);
+    return;
+  }
+  if (e.target.id === 'azzera') {
+    conferma(e.target, 'Confermi?', () => { stato = iniziale(); disegna(); salvaSubito(); });
+    return;
+  }
+
+  if (e.target.id === 'apriSnap' || e.target.closest('#apriSnap')) { apriSnap(); return; }
+  if (e.target.id === 'chiudiSnap' || e.target === $overlay) { chiudiSnap(); return; }
+  if (e.target.id === 'esporta') { esporta(); return; }
+
+  const carica = e.target.closest('[data-carica]');
+  if (carica) {
+    conferma(carica, 'Confermi?', () => {
+      const s = snap.find(x => x.id === carica.dataset.carica);
+      if (!s) return;
+      stato = clona(s.stato);
+      disegna(); salvaSubito(); chiudiSnap();
+      avviso(`Caricato: ${s.nome || 'senza nome'}`);
+    });
+    return;
+  }
+  const elimina = e.target.closest('[data-elimina]');
+  if (elimina) {
+    conferma(elimina, 'Elimino?', () => {
+      snap = snap.filter(x => x.id !== elimina.dataset.elimina);
+      salvaSnap(); set('#nSnap', snap.length); apriSnap();
+    });
+    return;
+  }
+});
+
+disegna();
+</script>
+</body>
+</html>
