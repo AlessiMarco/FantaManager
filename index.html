@@ -284,7 +284,25 @@
   .snome:hover { background: rgba(255,255,255,0.04); }
   .snome:focus { background: var(--field); box-shadow: inset 0 0 0 1.5px var(--piano); }
   .smeta { grid-column: 1; font-size: 12px; color: var(--text-4); font-variant-numeric: tabular-nums; }
+  .smeta.err { color: var(--neg); }
   .sazioni { grid-column: 2; grid-row: 1 / span 2; display: flex; gap: 6px; }
+  .snap.corrente .stit { font-size: 14px; }
+  .snap.corrente .stit i { font-style: normal; font-size: 11px; color: var(--live); margin-left: 8px; letter-spacing: 0.08em; }
+
+  /* ——— pannello GitHub ——— */
+  .passi { font-size: 12px; color: var(--text-3); padding-left: 18px; margin: 0 0 14px; line-height: 1.55; }
+  .passi a { color: var(--piano); text-decoration: none; }
+  .passi a:hover { text-decoration: underline; }
+  .campo { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; font-size: 11px; color: var(--text-4); letter-spacing: 0.1em; }
+  .campo input {
+    height: 38px; border-radius: 8px; border: none; outline: none; padding: 0 10px;
+    background: var(--field); color: var(--text-1); font: inherit; font-size: 14px; letter-spacing: 0;
+    box-shadow: inset 0 0 0 1px var(--edge);
+  }
+  .campo input:focus { box-shadow: inset 0 0 0 1.5px var(--piano); }
+  .stato-gh { font-size: 12px; margin: 6px 0 0; }
+  .stato-gh.ok { color: var(--live); }
+  .stato-gh.err { color: var(--neg); }
 
   .toast {
     position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 60;
@@ -357,7 +375,8 @@
     .overlay { align-items: flex-end; padding: 0; }
     .sheet { max-height: 88vh; border-radius: 16px 16px 0 0; padding-bottom: calc(18px + env(safe-area-inset-bottom)); }
     .btn { height: 36px; }
-    .sazioni { flex-direction: column; }
+    .snap { grid-template-columns: minmax(0,1fr); }
+    .sazioni { grid-column: 1; grid-row: auto; justify-content: flex-end; margin-top: 4px; }
   }
 </style>
 </head>
@@ -431,13 +450,14 @@ try {
   if (salvato) stato = salvato;
 } catch (e) { /* si riparte da zero */ }
 
-let snap = [];
+/* salvataggi locali (localStorage). Con GitHub collegato la lista attiva è quella remota, vedi più sotto. */
+let snapLocali = [];
 try {
-  const lista = JSON.parse(localStorage.getItem(CHIAVE_SNAP) || '[]');
-  if (Array.isArray(lista)) snap = lista.map(x => ({
+  const voci = JSON.parse(localStorage.getItem(CHIAVE_SNAP) || '[]');
+  if (Array.isArray(voci)) snapLocali = voci.map(x => ({
     id: String(x.id), nome: String(x.nome ?? ''), data: String(x.data ?? ''), stato: pulisci(x.stato)
   })).filter(x => x.stato);
-} catch (e) { snap = []; }
+} catch (e) { snapLocali = []; }
 
 function salvaSubito() {
   try { localStorage.setItem(CHIAVE, JSON.stringify(stato)); } catch (e) { /* modalità privata */ }
@@ -448,7 +468,7 @@ function salva() {
   timerSalva = setTimeout(salvaSubito, 350);
 }
 function salvaSnap() {
-  try { localStorage.setItem(CHIAVE_SNAP, JSON.stringify(snap)); } catch (e) { avviso('Spazio pieno: salvataggio non riuscito'); }
+  try { localStorage.setItem(CHIAVE_SNAP, JSON.stringify(snapLocali)); } catch (e) { avviso('Spazio pieno: salvataggio non riuscito'); }
 }
 
 const $sums = document.getElementById('sums');
@@ -492,7 +512,7 @@ function colonnaTotali() {
     <div class="track"><i id="trackTot" style="width:0%;background:var(--live)"></i></div>
     <div class="azioni">
       <button id="salva" data-az="salva">Salva</button>
-      <button id="apriSnap" data-apri="salvataggi">Salvataggi<b class="nSnap">${snap.length}</b></button>
+      <button id="apriSnap" data-apri="salvataggi">Salvataggi<b class="nSnap">${lista().length}</b></button>
       <button id="azzera" data-az="azzera">Azzera</button>
     </div>
   </div>`;
@@ -516,7 +536,7 @@ function pannelloImpostazioni() {
     <div class="sep"></div>
     <div class="sbar">
       <button class="btn" data-az="salva">Salva</button>
-      <button class="btn" data-apri="salvataggi">Salvataggi<b class="nSnap" style="color:var(--text-4);margin-left:4px">${snap.length}</b></button>
+      <button class="btn" data-apri="salvataggi">Salvataggi<b class="nSnap" style="color:var(--text-4);margin-left:4px">${lista().length}</b></button>
       <button class="btn ghost" data-az="azzera">Azzera</button>
     </div>
     <p class="nota">Salva crea un salvataggio con data e ora. Il lavoro in corso si salva comunque da solo.</p>
@@ -806,57 +826,289 @@ function aggiorna(escludi) {
   });
 }
 
-/* ——— salvataggi ——— */
+/* ——— GitHub come archivio ———
+   Con repo e token impostati, ogni salvataggio è un file salvataggi/<id>.json nel repo
+   e lo stato corrente si può inviare come corrente.json. Il token resta nel browser. */
+const CHIAVE_GH = 'asta.gh';
+let gh = { repo: '', token: '' };
+try {
+  const c = JSON.parse(localStorage.getItem(CHIAVE_GH) || '{}');
+  gh = { repo: String(c.repo || ''), token: String(c.token || '') };
+} catch (e) { /* non collegato */ }
+const remoto = () => !!(gh.repo && gh.token);
+function salvaGh() { try { localStorage.setItem(CHIAVE_GH, JSON.stringify(gh)); } catch (e) { /* niente */ } }
+
+let snapRemoti = [];        // { id, nome, data, stato, sha }
+let correnteRemoto = null;  // { data, stato, sha }
+const statoGh = { caricamento: false, errore: '', aggiornato: null };
+const lista = () => remoto() ? snapRemoti : snapLocali;
+const perData = (a, b) => b.data.localeCompare(a.data);
+
+const b64 = s => { const b = new TextEncoder().encode(s); let bin = ''; for (const x of b) bin += String.fromCharCode(x); return btoa(bin); };
+const deb64 = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g, '')), c => c.charCodeAt(0)));
+
+function spiegaErrore(s) {
+  if (s === 401) return 'Token non valido o scaduto';
+  if (s === 403) return 'Il token non può scrivere su questo repo';
+  if (s === 404) return 'Repo non trovato: controlla il nome';
+  if (s === 409 || s === 422) return 'Il file è cambiato altrove, lista ricaricata';
+  return `Errore GitHub (${s})`;
+}
+
+/* una chiamata all'API. GET su qualcosa che non esiste torna null invece di lanciare. */
+async function ghReq(metodo, percorso, corpo, grezzo) {
+  const url = `https://api.github.com/repos/${gh.repo}${percorso ? '/' + percorso : ''}`;
+  let r;
+  try {
+    r = await fetch(url, {
+      method: metodo, cache: 'no-store',
+      headers: {
+        Authorization: `Bearer ${gh.token}`,
+        Accept: grezzo ? 'application/vnd.github.raw+json' : 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        ...(corpo ? { 'Content-Type': 'application/json' } : {}),
+      },
+      body: corpo ? JSON.stringify(corpo) : undefined,
+    });
+  } catch (e) { const err = new Error('Rete non disponibile'); err.status = 0; throw err; }
+  if (r.status === 404 && metodo === 'GET') return null;
+  if (!r.ok) { const err = new Error(spiegaErrore(r.status)); err.status = r.status; throw err; }
+  return grezzo ? r.text() : r.json();
+}
+async function ghScrivi(percorso, oggetto, sha, messaggio) {
+  const r = await ghReq('PUT', `contents/${percorso}`, {
+    message: messaggio, content: b64(JSON.stringify(oggetto, null, 2)), ...(sha ? { sha } : {}),
+  });
+  return r.content.sha;
+}
+async function ghCancella(percorso, sha, messaggio) {
+  await ghReq('DELETE', `contents/${percorso}`, { message: messaggio, sha });
+}
+
+/* esegue un'operazione remota; in caso di errore avvisa e, se il file è cambiato altrove, ricarica */
+async function operazione(fn) {
+  try { await fn(); return true; }
+  catch (e) {
+    avviso(e.message);
+    if (e.status === 409 || e.status === 422) ricaricaRemoto();
+    return false;
+  }
+}
+
+async function ricaricaRemoto() {
+  if (!remoto() || statoGh.caricamento) return;
+  statoGh.caricamento = true; statoGh.errore = '';
+  if (pannelloAperto === 'salvataggi') apriSnap(false);
+  try {
+    const voci = (await ghReq('GET', 'contents/salvataggi')) || [];
+    const file = (Array.isArray(voci) ? voci : []).filter(v => v.type === 'file' && /\.json$/i.test(v.name));
+    const letti = await Promise.all(file.map(async v => {
+      try {
+        const d = JSON.parse(await ghReq('GET', `contents/salvataggi/${encodeURIComponent(v.name)}`, null, true));
+        const st = pulisci(d.stato);
+        return st ? { id: v.name.replace(/\.json$/i, ''), nome: String(d.nome ?? ''), data: String(d.data ?? ''), stato: st, sha: v.sha } : null;
+      } catch (e) { return null; }
+    }));
+    snapRemoti = letti.filter(Boolean).sort(perData);
+
+    const meta = await ghReq('GET', 'contents/corrente.json');
+    correnteRemoto = null;
+    if (meta && meta.content) {
+      try {
+        const d = JSON.parse(deb64(meta.content));
+        const st = pulisci(d.stato);
+        if (st) correnteRemoto = { data: String(d.data ?? ''), stato: st, sha: meta.sha };
+      } catch (e) { /* file corrotto: lo ignoro */ }
+    }
+    statoGh.aggiornato = new Date();
+  } catch (e) { statoGh.errore = e.message; }
+  statoGh.caricamento = false;
+  setAll('.nSnap', lista().length);
+  if (pannelloAperto === 'salvataggi') apriSnap(false);
+}
+
+/* ——— salvataggi (locali o remoti, stessa interfaccia) ——— */
 const nuovoId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const dataIt = iso => {
   const d = new Date(iso);
   return isNaN(d) ? '' : d.toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
 };
+const oraIt = d => d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
 function riassunto(s) {
   const live = s.ruoli.reduce((a, r) => a + somma(r, 'l'), 0);
   const pn = s.ruoli.reduce((a, r) => a + pieni(r, 'l'), 0);
   const tot = s.ruoli.reduce((a, r) => a + r.slot.length, 0);
   return `${cr(live) || '0'} cr live · ${pn}/${tot} slot · budget ${cr(s.budget) || '0'}`;
 }
-function creaSnap(nome, s, data) {
-  snap.unshift({ id: nuovoId(), nome, data: data || new Date().toISOString(), stato: clona(s) });
-  salvaSnap();
-  setAll('.nSnap', snap.length);
+const fileSnap = s => ({ id: s.id, nome: s.nome, data: s.data, stato: s.stato });
+
+async function aggiungiSnap(s) {
+  let ok = true;
+  if (remoto()) {
+    ok = await operazione(async () => {
+      const sha = await ghScrivi(`salvataggi/${s.id}.json`, fileSnap(s), null, `Salvataggio: ${s.nome || s.id}`);
+      snapRemoti.push({ ...s, sha }); snapRemoti.sort(perData);
+    });
+  } else { snapLocali.push(s); snapLocali.sort(perData); salvaSnap(); }
+  setAll('.nSnap', lista().length);
+  return ok;
+}
+function creaSnap(nome, st) {
+  return aggiungiSnap({ id: nuovoId(), nome, data: new Date().toISOString(), stato: clona(st) });
+}
+async function aggiornaSnap(s, campi, messaggio) {
+  Object.assign(s, campi);
+  if (remoto()) {
+    return operazione(async () => { s.sha = await ghScrivi(`salvataggi/${s.id}.json`, fileSnap(s), s.sha, messaggio || `Aggiornato: ${s.nome || s.id}`); });
+  }
+  salvaSnap(); return true;
+}
+async function eliminaSnap(s) {
+  let ok = true;
+  if (remoto()) {
+    ok = await operazione(async () => {
+      await ghCancella(`salvataggi/${s.id}.json`, s.sha, `Eliminato: ${s.nome || s.id}`);
+      snapRemoti = snapRemoti.filter(x => x !== s);
+    });
+  } else { snapLocali = snapLocali.filter(x => x !== s); salvaSnap(); }
+  setAll('.nSnap', lista().length);
+  return ok;
+}
+async function sincronizzaCorrente() {
+  return operazione(async () => {
+    const data = new Date().toISOString();
+    const sha = await ghScrivi('corrente.json', { data, stato }, correnteRemoto?.sha, 'Stato corrente sincronizzato');
+    correnteRemoto = { data, stato: clona(stato), sha };
+    avviso('Stato corrente inviato a GitHub');
+  });
+}
+/* porta su GitHub i salvataggi rimasti nel browser, poi li toglie dal locale */
+async function migraLocali() {
+  const daFare = snapLocali.filter(s => !snapRemoti.some(x => x.id === s.id));
+  let n = 0;
+  for (const s of daFare) { if (await aggiungiSnap(s)) n++; else break; }
+  if (n === daFare.length) { snapLocali = []; salvaSnap(); avviso(n === 1 ? '1 salvataggio portato su GitHub' : `${n} salvataggi portati su GitHub`); }
+  else avviso(`Portati ${n} su ${daFare.length}: riprova per gli altri`);
+}
+
+let pannelloAperto = null;
+
+function rigaSnap(s) {
+  return `<div class="snap" data-id="${s.id}">
+    <input class="snome" value="${esc(s.nome)}" data-rinomina="${s.id}" aria-label="Nome del salvataggio" placeholder="Senza nome" autocomplete="off">
+    <span class="smeta">${dataIt(s.data)} · ${riassunto(s.stato)}</span>
+    <div class="sazioni">
+      <button class="btn" data-carica="${s.id}">Carica</button>
+      <button class="btn ghost" data-sovrascrivi="${s.id}" title="Sostituisce questo salvataggio con lo stato corrente">Aggiorna</button>
+      <button class="btn ghost" data-elimina="${s.id}">Elimina</button>
+    </div>
+  </div>`;
 }
 
 function pannelloSnap() {
-  const lista = snap.length ? snap.map(s => `
-    <div class="snap" data-id="${s.id}">
-      <input class="snome" value="${esc(s.nome)}" data-rinomina="${s.id}" aria-label="Nome del salvataggio" placeholder="Senza nome">
-      <span class="smeta">${dataIt(s.data)} · ${riassunto(s.stato)}</span>
-      <div class="sazioni">
-        <button class="btn" data-carica="${s.id}">Carica</button>
-        <button class="btn ghost" data-elimina="${s.id}">Elimina</button>
-      </div>
-    </div>`).join('')
-    : '<p class="vuoto">Nessun salvataggio. Premi Salva per creare il primo.</p>';
+  const voci = lista();
+  const righe = voci.length ? voci.map(rigaSnap).join('')
+    : (statoGh.caricamento ? '' : '<p class="vuoto">Nessun salvataggio. Premi Salva per creare il primo.</p>');
+
+  let nota, extra = '';
+  if (remoto()) {
+    const st = statoGh.caricamento ? 'Aggiornamento in corso…'
+      : statoGh.errore ? statoGh.errore
+      : statoGh.aggiornato ? `Aggiornato alle ${oraIt(statoGh.aggiornato)}` : '';
+    nota = `<p class="nota">Repo <b>${esc(gh.repo)}</b>: ogni salvataggio è un file JSON nella cartella salvataggi, condiviso fra tutti i tuoi dispositivi. <span class="${statoGh.errore ? 'smeta err' : ''}">${esc(st)}</span></p>`;
+    if (snapLocali.length) extra += `<div class="sbar"><button class="btn" data-az="migra">Porta su GitHub i ${snapLocali.length} salvataggi di questo dispositivo</button></div>`;
+    if (correnteRemoto) extra += `<div class="snap corrente">
+      <span class="stit">Stato corrente<i>SINCRONIZZATO</i></span>
+      <span class="smeta">${dataIt(correnteRemoto.data)} · ${riassunto(correnteRemoto.stato)}</span>
+      <div class="sazioni"><button class="btn" data-carica="corrente">Carica</button></div>
+    </div>`;
+  } else {
+    nota = `<p class="nota">I salvataggi vivono nel browser di questo dispositivo. Collega GitHub per averli su PC e telefono insieme, oppure esporta il file e importalo dall'altra parte.</p>`;
+  }
 
   return `<div class="sheet" role="dialog" aria-label="Salvataggi">
     <div class="shead">
-      <span class="stit">Salvataggi</span>
+      <span class="stit">Salvataggi${remoto() ? ' · GitHub' : ''}</span>
       <button class="btn ghost" data-chiudi>Chiudi</button>
     </div>
     <div class="sbar">
+      ${remoto() ? '<button class="btn" data-az="sincronizza">Sincronizza corrente</button>' : ''}
       <button class="btn" id="esporta">Esporta tutto</button>
       <label class="btn" for="importa">Importa file</label>
       <input type="file" id="importa" accept="application/json,.json" hidden>
+      <button class="btn ghost" data-apri="github">GitHub${remoto() ? ' ✓' : ''}</button>
     </div>
-    <p class="nota">I salvataggi vivono nel browser di questo dispositivo. Per tenerne una copia o portarli su un altro dispositivo, esporta il file e importalo dall'altra parte.</p>
-    ${lista}
+    ${nota}${extra}${righe}
   </div>`;
 }
-function apriPannello(html) { $overlay.innerHTML = html; $overlay.hidden = false; aggiorna(); }
-function apriSnap() { apriPannello(pannelloSnap()); }
-function chiudiSnap() { $overlay.hidden = true; $overlay.innerHTML = ''; }
-const PANNELLI = { salvataggi: pannelloSnap, impostazioni: pannelloImpostazioni, torta: pannelloTorta };
+
+function pannelloGitHub() {
+  return `<div class="sheet" role="dialog" aria-label="Collegamento a GitHub">
+    <div class="shead">
+      <span class="stit">GitHub</span>
+      <span style="display:flex;gap:6px">
+        <button class="btn ghost" data-apri="salvataggi">Indietro</button>
+        <button class="btn ghost" data-chiudi>Chiudi</button>
+      </span>
+    </div>
+    <p class="nota">Con GitHub collegato ogni salvataggio diventa un file JSON nel tuo repo, uguale su PC e telefono, con tutta la storia delle versioni. Il token resta solo in questo browser: va incollato una volta per dispositivo.</p>
+    <ol class="passi">
+      <li><a href="https://github.com/new?name=FantaManager-dati&visibility=private&description=Salvataggi+di+FantaManager" target="_blank" rel="noopener">Crea un repo privato</a>, per esempio <b>FantaManager-dati</b>.</li>
+      <li><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Crea un token</a> di tipo fine-grained: in "Repository access" scegli solo quel repo, in "Permissions" dai a <b>Contents</b> il livello <b>Read and write</b>.</li>
+      <li>Incolla qui sotto e premi Collega.</li>
+    </ol>
+    <label class="campo">REPO<input id="ghRepo" value="${esc(gh.repo || 'AlessiMarco/FantaManager-dati')}" placeholder="utente/repo" autocapitalize="off" autocomplete="off" spellcheck="false"></label>
+    <label class="campo">TOKEN<input id="ghToken" type="password" value="${esc(gh.token)}" placeholder="github_pat_…" autocomplete="off"></label>
+    <div class="sbar">
+      <button class="btn" data-az="ghCollega">Collega e verifica</button>
+      ${remoto() ? '<button class="btn ghost" data-az="ghScollega">Scollega</button>' : ''}
+    </div>
+    <p class="stato-gh ${remoto() ? 'ok' : ''}" id="ghStato">${remoto() ? 'Collegato a ' + esc(gh.repo) : 'Non collegato'}</p>
+  </div>`;
+}
+
+async function collegaGh(repo, token) {
+  const $s = document.getElementById('ghStato');
+  const mostra = (t, cls) => { if ($s) { $s.textContent = t; $s.className = 'stato-gh ' + cls; } };
+  repo = repo.trim().replace(/^https?:\/\/github\.com\//, '').replace(/\/+$/, '').replace(/\.git$/, '');
+  token = token.trim();
+  if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) { mostra('Il repo va scritto come utente/repo', 'err'); return; }
+  if (!token) { mostra('Manca il token', 'err'); return; }
+  const prima = { ...gh };
+  gh = { repo, token };
+  mostra('Verifico…', '');
+  try {
+    const info = await ghReq('GET', '');
+    if (!info) throw Object.assign(new Error(spiegaErrore(404)), { status: 404 });
+    if (!info.permissions || !info.permissions.push) throw Object.assign(new Error(spiegaErrore(403)), { status: 403 });
+    salvaGh();
+    mostra(`Collegato a ${repo}${info.private ? '' : ' (attenzione: repo pubblico)'}`, 'ok');
+    avviso('GitHub collegato');
+    await ricaricaRemoto();
+    apriSnap(false);
+  } catch (e) {
+    gh = prima;
+    mostra(e.message, 'err');
+  }
+}
+function scollegaGh() {
+  gh = { repo: '', token: '' }; salvaGh();
+  snapRemoti = []; correnteRemoto = null; statoGh.errore = ''; statoGh.aggiornato = null;
+  setAll('.nSnap', lista().length);
+  avviso('GitHub scollegato: i salvataggi tornano locali');
+  apriPannello(pannelloGitHub(), 'github');
+}
+
+function apriPannello(html, nome) { pannelloAperto = nome || null; $overlay.innerHTML = html; $overlay.hidden = false; aggiorna(); }
+function apriSnap(ricarica = true) {
+  apriPannello(pannelloSnap(), 'salvataggi');
+  if (ricarica && remoto()) ricaricaRemoto();
+}
+function chiudiSnap() { pannelloAperto = null; $overlay.hidden = true; $overlay.innerHTML = ''; }
+const PANNELLI = { salvataggi: pannelloSnap, impostazioni: pannelloImpostazioni, torta: pannelloTorta, github: pannelloGitHub };
 
 function esporta() {
-  const dati = { app: 'FantaManager', versione: 1, esportato: new Date().toISOString(), corrente: stato, salvataggi: snap };
+  const dati = { app: 'FantaManager', versione: 1, esportato: new Date().toISOString(), corrente: stato, salvataggi: lista().map(fileSnap) };
   const blob = new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   const d = new Date(), pad = n => String(n).padStart(2, '0');
@@ -868,28 +1120,27 @@ function esporta() {
 
 function importa(file) {
   const fr = new FileReader();
-  fr.onload = () => {
+  fr.onload = async () => {
+    let nuovi = [];
     try {
       const d = JSON.parse(fr.result);
-      let n = 0;
+      const presenti = lista();
       if (Array.isArray(d.salvataggi)) {
         d.salvataggi.forEach(s => {
           const st = pulisci(s.stato);
-          if (!st || snap.some(x => x.id === String(s.id))) return;
-          snap.push({ id: String(s.id || nuovoId()), nome: String(s.nome ?? 'Importato'), data: String(s.data || d.esportato || new Date().toISOString()), stato: st });
-          n++;
+          const id = String(s.id || nuovoId()).replace(/[^\w.-]/g, '');
+          if (!st || !id || presenti.some(x => x.id === id) || nuovi.some(x => x.id === id)) return;
+          nuovi.push({ id, nome: String(s.nome ?? 'Importato'), data: String(s.data || d.esportato || new Date().toISOString()), stato: st });
         });
       }
       const corrente = pulisci(d.corrente) || (Array.isArray(d.salvataggi) ? null : pulisci(d));
-      if (corrente) {
-        snap.push({ id: nuovoId(), nome: 'Importato · stato corrente', data: String(d.esportato || new Date().toISOString()), stato: corrente });
-        n++;
-      }
-      if (n === 0) { avviso('Nessun salvataggio nuovo nel file'); return; }
-      snap.sort((a, b) => b.data.localeCompare(a.data));
-      salvaSnap(); setAll('.nSnap', snap.length); apriSnap();
-      avviso(n === 1 ? '1 salvataggio importato' : `${n} salvataggi importati`);
-    } catch (e) { avviso('File non valido'); }
+      if (corrente) nuovi.push({ id: nuovoId(), nome: 'Importato · stato corrente', data: String(d.esportato || new Date().toISOString()), stato: corrente });
+    } catch (e) { avviso('File non valido'); return; }
+    if (nuovi.length === 0) { avviso('Nessun salvataggio nuovo nel file'); return; }
+    let n = 0;
+    for (const s of nuovi) { if (await aggiungiSnap(s)) n++; else break; }
+    apriSnap(false);
+    avviso(n === 1 ? '1 salvataggio importato' : `${n} salvataggi importati`);
   };
   fr.readAsText(file);
 }
@@ -906,12 +1157,16 @@ function conferma(b, testo, fn) {
 }
 
 /* ——— eventi ——— */
+const timerRinomina = new Map();
 document.addEventListener('input', e => {
   const el = e.target;
   if (el.classList.contains('budget')) { stato.budget = num(el.value) ?? 0; aggiorna(el); salva(); return; }
-  if (el.dataset.rinomina) {
-    const s = snap.find(x => x.id === el.dataset.rinomina);
-    if (s) { s.nome = el.value; clearTimeout(timerSalva); timerSalva = setTimeout(salvaSnap, 350); }
+  if (el.dataset.rinomina !== undefined) {
+    const s = lista().find(x => x.id === el.dataset.rinomina);
+    if (!s) return;
+    s.nome = el.value;
+    clearTimeout(timerRinomina.get(s.id));
+    timerRinomina.set(s.id, setTimeout(() => aggiornaSnap(s, {}, `Rinominato: ${s.nome || s.id}`), remoto() ? 1200 : 350));
     return;
   }
   if (!el.classList.contains('f')) return;
@@ -994,26 +1249,50 @@ document.addEventListener('click', e => {
 
   const az = e.target.closest('[data-az]');
   if (az && az.dataset.az === 'salva') {
-    creaSnap(`Salvataggio ${snap.length + 1}`, stato);
     salvaSubito();
-    az.textContent = 'Salvato'; az.classList.add('ok');
-    setTimeout(() => { az.textContent = 'Salva'; az.classList.remove('ok'); }, 1500);
+    az.disabled = true; az.classList.add('ok');
+    az.textContent = remoto() ? 'Salvo…' : 'Salvato';
+    creaSnap(`Salvataggio ${lista().length + 1}`, stato).then(ok => {
+      az.textContent = ok ? 'Salvato' : 'Non salvato';
+      if (pannelloAperto === 'salvataggi') apriSnap(false);
+      setTimeout(() => { az.textContent = 'Salva'; az.classList.remove('ok'); az.disabled = false; }, 1500);
+    });
     return;
   }
   if (az && az.dataset.az === 'azzera') {
     conferma(az, 'Confermi?', () => { stato = iniziale(); disegna(); salvaSubito(); chiudiSnap(); });
     return;
   }
+  if (az && az.dataset.az === 'sincronizza') {
+    az.disabled = true; az.textContent = 'Invio…';
+    sincronizzaCorrente().then(() => apriSnap(false));
+    return;
+  }
+  if (az && az.dataset.az === 'migra') {
+    az.disabled = true; az.textContent = 'Trasferimento…';
+    migraLocali().then(() => apriSnap(false));
+    return;
+  }
+  if (az && az.dataset.az === 'ghCollega') {
+    az.disabled = true;
+    collegaGh(document.getElementById('ghRepo').value, document.getElementById('ghToken').value).then(() => { az.disabled = false; });
+    return;
+  }
+  if (az && az.dataset.az === 'ghScollega') { conferma(az, 'Confermi?', scollegaGh); return; }
 
   const apri = e.target.closest('[data-apri]');
-  if (apri) { apriPannello(PANNELLI[apri.dataset.apri]()); return; }
+  if (apri) {
+    if (apri.dataset.apri === 'salvataggi') apriSnap(); else apriPannello(PANNELLI[apri.dataset.apri](), apri.dataset.apri);
+    return;
+  }
   if (e.target.closest('[data-chiudi]') || e.target === $overlay) { chiudiSnap(); return; }
   if (e.target.id === 'esporta') { esporta(); return; }
 
   const carica = e.target.closest('[data-carica]');
   if (carica) {
     conferma(carica, 'Confermi?', () => {
-      const s = snap.find(x => x.id === carica.dataset.carica);
+      const id = carica.dataset.carica;
+      const s = id === 'corrente' ? correnteRemoto && { nome: 'stato corrente sincronizzato', stato: correnteRemoto.stato } : lista().find(x => x.id === id);
       if (!s) return;
       stato = clona(s.stato);
       disegna(); salvaSubito(); chiudiSnap();
@@ -1021,15 +1300,27 @@ document.addEventListener('click', e => {
     });
     return;
   }
+  const sovrascrivi = e.target.closest('[data-sovrascrivi]');
+  if (sovrascrivi) {
+    conferma(sovrascrivi, 'Sovrascrivo?', () => {
+      const s = lista().find(x => x.id === sovrascrivi.dataset.sovrascrivi);
+      if (!s) return;
+      aggiornaSnap(s, { stato: clona(stato), data: new Date().toISOString() }, `Aggiornato: ${s.nome || s.id}`)
+        .then(ok => { if (ok) avviso(`Aggiornato: ${s.nome || 'senza nome'}`); apriSnap(false); });
+    });
+    return;
+  }
   const elimina = e.target.closest('[data-elimina]');
   if (elimina) {
     conferma(elimina, 'Elimino?', () => {
-      snap = snap.filter(x => x.id !== elimina.dataset.elimina);
-      salvaSnap(); setAll('.nSnap', snap.length); apriSnap();
+      const s = lista().find(x => x.id === elimina.dataset.elimina);
+      if (s) eliminaSnap(s).then(() => apriSnap(false));
     });
     return;
   }
 });
+
+if (remoto()) ricaricaRemoto();
 
 disegna();
 </script>
