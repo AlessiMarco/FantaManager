@@ -80,16 +80,20 @@
 
   .azioni { margin-top: auto; padding-top: 16px; display: flex; gap: 10px; align-items: center; }
   .azioni button { height: 38px; border-radius: 10px; cursor: pointer; font: inherit; font-size: 14px; }
-  #salva, #apriSnap {
+  .azioni .az {
     color: var(--text-1); background: rgba(255,255,255,0.05); border: 1px solid var(--edge); padding: 0 14px;
   }
-  #salva { flex: 1; }
-  #salva:hover, #apriSnap:hover { border-color: rgba(255,255,255,0.2); }
-  #salva.ok { color: var(--live); border-color: rgba(53,177,164,0.45); }
-  #apriSnap b { font-weight: 500; color: var(--text-4); margin-left: 4px; font-variant-numeric: tabular-nums; }
-  #azzera { border: none; background: none; color: var(--text-4); padding: 0 10px; }
-  #azzera.att { color: var(--neg); }
-  #azzera:hover { color: var(--neg); }
+  .azioni .az.primaria { flex: 1; }
+  .azioni .az:hover { border-color: rgba(255,255,255,0.2); }
+  .azioni .az b { font-weight: 500; color: var(--text-4); margin-left: 5px; font-variant-numeric: tabular-nums; }
+  .ico {
+    width: 40px; height: 40px; border-radius: 10px; cursor: pointer; padding: 0; flex: none;
+    border: 1px solid var(--edge); background: rgba(255,255,255,0.05); color: var(--text-2);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ico:hover { border-color: rgba(255,255,255,0.2); color: var(--text-1); }
+  .ico svg { width: 20px; height: 20px; }
+  .azioni .ico { width: 38px; height: 38px; }
 
   /* ——— tabella riepilogo ——— */
   /* orizzontale e minimale: reparti in colonna, tre righe (strategia, live, delta),
@@ -254,8 +258,29 @@
     background: #0f1115; border-radius: 14px; box-shadow: inset 0 0 0 1px var(--edge);
     padding: 16px 18px 18px;
   }
-  .shead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  .stit { font-size: 15px; font-weight: 500; letter-spacing: 0.04em; }
+  .shead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 10px; }
+  .shead .sbtn { display: flex; gap: 6px; flex: none; }
+  .stit { font-size: 16px; font-weight: 500; letter-spacing: 0.02em; }
+  /* sezioni e voci di menu dentro i pannelli */
+  .sez { font-size: 11px; color: var(--text-4); letter-spacing: 0.14em; margin: 18px 0 6px; padding-bottom: 6px; border-bottom: 1px solid var(--edge); }
+  .sez:first-of-type { margin-top: 4px; }
+  .sez.rischio { color: var(--neg); border-bottom-color: rgba(224,101,92,0.35); }
+  .voce {
+    display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; margin: 0 0 6px;
+    padding: 10px 12px; border-radius: 10px; cursor: pointer; font: inherit; color: var(--text-1);
+    background: rgba(255,255,255,0.045); border: 1px solid var(--edge);
+  }
+  .voce:hover { border-color: rgba(255,255,255,0.2); }
+  .voce .vt { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+  .voce b { font-size: 14px; font-weight: 500; }
+  .voce b em { font-style: normal; color: var(--text-4); font-weight: 400; margin-left: 6px; font-variant-numeric: tabular-nums; }
+  .voce small { font-size: 12px; color: var(--text-4); line-height: 1.35; }
+  .voce i { font-style: normal; color: var(--text-4); font-size: 18px; flex: none; }
+  .voce.primaria { border-color: rgba(139,131,230,0.5); background: rgba(139,131,230,0.12); }
+  .voce.primaria b { color: var(--piano); }
+  .voce.ok small { color: var(--live); }
+  .btn.rosso { color: var(--neg); border-color: rgba(224,101,92,0.4); }
+  .sheet .riga .btn { margin-left: auto; }
   .sbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
   .sheet .riga { padding: 10px 0; }
   .sheet .sep { margin: 6px 0 4px; }
@@ -311,6 +336,7 @@
     white-space: nowrap; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis;
   }
   .toast[hidden] { display: none; }
+  .toast.alto { bottom: auto; top: calc(14px + env(safe-area-inset-top)); }
   .toast .tazione {
     margin-left: 12px; padding: 4px 10px; border-radius: 6px; cursor: pointer; font: inherit; font-size: 12px; font-weight: 600;
     color: var(--piano); background: rgba(139,131,230,0.14); border: 1px solid rgba(139,131,230,0.45);
@@ -353,12 +379,6 @@
     .mval .cr { font-size: 11px; color: var(--text-4); font-weight: 400; margin-left: 3px; }
     .mval.mx b { font-size: 18px; color: var(--text-2); }
     .mico { margin-left: auto; display: flex; gap: 6px; }
-    .ico {
-      width: 40px; height: 40px; border-radius: 10px; cursor: pointer; padding: 0;
-      border: 1px solid var(--edge); background: rgba(255,255,255,0.05); color: var(--text-2);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .ico svg { width: 20px; height: 20px; }
     .mnav { display: flex; gap: 6px; margin-bottom: 10px; }
     .bhead { display: none; }
     .mtab {
@@ -495,6 +515,7 @@ function avviso(testo, etichetta, fn) {
     azioneToast = fn;
     $toast.appendChild(b);
   }
+  $toast.classList.toggle('alto', !$overlay.hidden);   // con un pannello aperto l'avviso sale, così non copre i pulsanti
   $toast.hidden = false;
   clearTimeout(timerToast);
   timerToast = setTimeout(() => { $toast.hidden = true; azioneToast = null; }, etichetta ? 6000 : 2200);
@@ -529,44 +550,82 @@ function colonnaTotali() {
     </div>
     <div class="track"><i id="trackTot" style="width:0%;background:var(--live)"></i></div>
     <div class="azioni">
-      <button id="salva" data-az="salva">Salva</button>
-      <button id="apriSnap" data-apri="salvataggi">Salvataggi<b class="nSnap">${lista().length}</b></button>
-      <button id="azzera" data-az="azzera">Azzera</button>
+      <button class="az primaria" data-az="salva">Salva strategia</button>
+      <button class="az" data-apri="salvataggi">Strategie<b class="nSnap">${lista().length}</b></button>
+      <button class="ico" data-apri="impostazioni" aria-label="Impostazioni" title="Impostazioni">${ICO.impostazioni}</button>
     </div>
   </div>`;
 }
 
-/* pannello impostazioni sul telefono: budget e azioni che sul desktop stanno nella colonna totali */
+/* intestazione comune dei pannelli: titolo, Indietro se c'è una pila, Chiudi */
+function testa(titolo, chiudi = 'Chiudi') {
+  return `<div class="shead">
+    <span class="stit">${titolo}</span>
+    <span class="sbtn">
+      ${pila.length ? '<button class="btn ghost" data-az="indietro">Indietro</button>' : ''}
+      <button class="btn ghost" data-chiudi>${chiudi}</button>
+    </span>
+  </div>`;
+}
+
 function pannelloImpostazioni() {
+  let dati = '';
+  if (remoto()) {
+    dati += `<button class="voce ok" data-apri="github">
+      <span class="vt"><b>GitHub</b><small>Collegato a ${esc(gh.repo)}. Le strategie sono file nel repo, uguali su tutti i tuoi dispositivi.</small></span><i>›</i>
+    </button>
+    <div class="riga">
+      <span class="rk">STATO ATTUALE</span>
+      <button class="btn" data-az="sincronizza">Invia a GitHub</button>
+    </div>`;
+    if (correnteRemoto) dati += `<div class="riga">
+      <span class="rk" style="letter-spacing:0;font-size:13px">Sincronizzato il ${dataIt(correnteRemoto.data)}<br><span class="smeta">${riassunto(correnteRemoto.stato)}</span></span>
+      <button class="btn" data-carica="corrente">Carica</button>
+    </div>`;
+  } else {
+    dati += `<button class="voce" data-apri="github">
+      <span class="vt"><b>GitHub</b><small>Non collegato. Le strategie restano nel browser di questo dispositivo.</small></span><i>›</i>
+    </button>`;
+  }
+
   return `<div class="sheet" role="dialog" aria-label="Impostazioni">
-    <div class="shead">
-      <span class="stit">Impostazioni</span>
-      <button class="btn ghost" data-chiudi>Chiudi</button>
-    </div>
+    ${testa('Impostazioni')}
+
+    <div class="sez">ASTA</div>
     <div class="riga">
       <span class="rk">BUDGET</span>
       <input class="budget" inputmode="decimal" aria-label="Budget" value="${cr(stato.budget)}">
     </div>
     <div class="riga">
-      <span class="rk">SLOT</span>
+      <span class="rk">SLOT LIVE</span>
       <span class="rv slotTot">0 / 0</span>
     </div>
-    <div class="sep"></div>
-    <div class="sbar">
-      <button class="btn" data-az="salva">Salva</button>
-      <button class="btn" data-apri="salvataggi">Salvataggi<b class="nSnap" style="color:var(--text-4);margin-left:4px">${lista().length}</b></button>
-      <button class="btn ghost" data-az="azzera">Azzera</button>
+
+    <div class="sez">STRATEGIE</div>
+    <button class="voce primaria" data-az="salva">
+      <span class="vt"><b>Salva la situazione attuale</b><small>Crea una strategia con nome da strategia e live di adesso.</small></span>
+    </button>
+    <button class="voce" data-apri="salvataggi">
+      <span class="vt"><b>Le mie strategie<em class="nSnap">${lista().length}</em></b><small>Carica, rinomina, aggiorna o elimina.</small></span><i>›</i>
+    </button>
+
+    <div class="sez">DATI</div>
+    ${dati}
+    <div class="sbar" style="margin-top:8px">
+      <button class="btn" id="esporta">Esporta backup</button>
+      <label class="btn" for="importa">Importa backup</label>
+      <input type="file" id="importa" accept="application/json,.json" hidden>
     </div>
-    <p class="nota">Salva crea un salvataggio con data e ora. Il lavoro in corso si salva comunque da solo.</p>
+
+    <div class="sez rischio">AZZERA</div>
+    <p class="nota">Svuota tutti gli slot di strategia e live e riporta il budget a 500. Le strategie salvate non si toccano.</p>
+    <button class="btn rosso" data-az="azzera">Azzera l'asta</button>
   </div>`;
 }
 
 function pannelloTorta() {
   return `<div class="sheet" role="dialog" aria-label="Ripartizione per reparto">
-    <div class="shead">
-      <span class="stit">Ripartizione</span>
-      <button class="btn ghost" data-chiudi>Chiudi</button>
-    </div>
+    ${testa('Ripartizione')}
     ${torta()}
   </div>`;
 }
@@ -916,7 +975,7 @@ async function operazione(fn) {
 async function ricaricaRemoto() {
   if (!remoto() || statoGh.caricamento) return;
   statoGh.caricamento = true; statoGh.errore = '';
-  if (pannelloAperto === 'salvataggi') apriSnap(false);
+  rinfrescaSeLibero();
   try {
     const voci = (await ghReq('GET', 'contents/salvataggi')) || [];
     const file = (Array.isArray(voci) ? voci : []).filter(v => v.type === 'file' && /\.json$/i.test(v.name));
@@ -942,7 +1001,7 @@ async function ricaricaRemoto() {
   } catch (e) { statoGh.errore = e.message; }
   statoGh.caricamento = false;
   setAll('.nSnap', lista().length);
-  if (pannelloAperto === 'salvataggi') apriSnap(false);
+  rinfrescaSeLibero();
 }
 
 /* ——— salvataggi (locali o remoti, stessa interfaccia) ——— */
@@ -1009,15 +1068,17 @@ async function migraLocali() {
   else avviso(`Portati ${n} su ${daFare.length}: riprova per gli altri`);
 }
 
+/* ——— pannelli: pila per Indietro, apertura per nome, rinfresco ——— */
 let pannelloAperto = null;
+let pila = [];
 
 function rigaSnap(s) {
   return `<div class="snap" data-id="${s.id}">
-    <input class="snome" value="${esc(s.nome)}" data-rinomina="${s.id}" aria-label="Nome del salvataggio" placeholder="Senza nome" autocomplete="off">
+    <input class="snome" value="${esc(s.nome)}" data-rinomina="${s.id}" aria-label="Nome della strategia" placeholder="Senza nome" autocomplete="off">
     <span class="smeta">${dataIt(s.data)} · ${riassunto(s.stato)}</span>
     <div class="sazioni">
       <button class="btn" data-carica="${s.id}">Carica</button>
-      <button class="btn ghost" data-sovrascrivi="${s.id}" title="Sostituisce questo salvataggio con lo stato corrente">Aggiorna</button>
+      <button class="btn ghost" data-sovrascrivi="${s.id}" title="Sostituisce questa strategia con la situazione attuale">Aggiorna</button>
       <button class="btn ghost" data-elimina="${s.id}">Elimina</button>
     </div>
   </div>`;
@@ -1026,47 +1087,35 @@ function rigaSnap(s) {
 function pannelloSnap() {
   const voci = lista();
   const righe = voci.length ? voci.map(rigaSnap).join('')
-    : (statoGh.caricamento ? '' : '<p class="vuoto">Nessun salvataggio. Premi Salva per creare il primo.</p>');
+    : (statoGh.caricamento ? '' : '<p class="vuoto">Nessuna strategia salvata.</p>');
 
-  let nota, extra = '';
+  let dove;
   if (remoto()) {
-    const st = statoGh.caricamento ? 'Aggiornamento in corso…'
+    const st = statoGh.caricamento ? 'aggiornamento in corso…'
       : statoGh.errore ? statoGh.errore
-      : statoGh.aggiornato ? `Aggiornato alle ${oraIt(statoGh.aggiornato)}` : '';
-    nota = `<p class="nota">Repo <b>${esc(gh.repo)}</b>: ogni salvataggio è un file JSON nella cartella salvataggi, condiviso fra tutti i tuoi dispositivi. <span class="${statoGh.errore ? 'smeta err' : ''}">${esc(st)}</span></p>`;
-    if (snapLocali.length) extra += `<div class="sbar"><button class="btn" data-az="migra">Porta su GitHub i ${snapLocali.length} salvataggi di questo dispositivo</button></div>`;
-    if (correnteRemoto) extra += `<div class="snap corrente">
-      <span class="stit">Stato corrente<i>SINCRONIZZATO</i></span>
-      <span class="smeta">${dataIt(correnteRemoto.data)} · ${riassunto(correnteRemoto.stato)}</span>
-      <div class="sazioni"><button class="btn" data-carica="corrente">Carica</button></div>
-    </div>`;
+      : statoGh.aggiornato ? `aggiornato alle ${oraIt(statoGh.aggiornato)}` : '';
+    dove = `<p class="nota">Su GitHub, repo <b>${esc(gh.repo)}</b> <span class="${statoGh.errore ? 'smeta err' : ''}">· ${esc(st)}</span></p>`;
   } else {
-    nota = `<p class="nota">I salvataggi vivono nel browser di questo dispositivo. Collega GitHub per averli su PC e telefono insieme, oppure esporta il file e importalo dall'altra parte.</p>`;
+    dove = `<p class="nota">Nel browser di questo dispositivo. Per averle anche sul telefono collega GitHub da Impostazioni.</p>`;
   }
+  const migra = remoto() && snapLocali.length
+    ? `<button class="voce" data-az="migra"><span class="vt"><b>Porta su GitHub le ${snapLocali.length} strategie di questo dispositivo</b><small>Sono rimaste nel browser da prima del collegamento.</small></span></button>` : '';
 
-  return `<div class="sheet" role="dialog" aria-label="Salvataggi">
-    <div class="shead">
-      <span class="stit">Salvataggi${remoto() ? ' · GitHub' : ''}</span>
-      <button class="btn ghost" data-chiudi>Chiudi</button>
-    </div>
-    <div class="sbar">
-      ${remoto() ? '<button class="btn" data-az="sincronizza">Sincronizza corrente</button>' : ''}
-      <button class="btn" id="esporta">Esporta tutto</button>
-      <label class="btn" for="importa">Importa file</label>
-      <input type="file" id="importa" accept="application/json,.json" hidden>
-      <button class="btn ghost" data-apri="github">GitHub${remoto() ? ' ✓' : ''}</button>
-    </div>
-    ${nota}${extra}${righe}
+  return `<div class="sheet" role="dialog" aria-label="Strategie">
+    ${testa('Strategie')}
+    ${dove}
+    <button class="voce primaria" data-az="salva">
+      <span class="vt"><b>Salva la situazione attuale</b><small>Crea una nuova strategia con nome.</small></span>
+    </button>
+    ${migra}
+    ${righe}
   </div>`;
 }
 
 function pannelloSalva() {
   return `<div class="sheet" role="dialog" aria-label="Salva strategia">
-    <div class="shead">
-      <span class="stit">Salva strategia</span>
-      <button class="btn ghost" data-chiudi>Annulla</button>
-    </div>
-    <label class="campo">NOME<input id="nomeSnap" value="" placeholder="Salvataggio ${lista().length + 1}" autocomplete="off" enterkeyhint="done"></label>
+    ${testa('Salva strategia', 'Annulla')}
+    <label class="campo">NOME<input id="nomeSnap" value="" placeholder="Strategia ${lista().length + 1}" autocomplete="off" enterkeyhint="done"></label>
     <p class="nota">Salva strategia e live di tutti i reparti così come sono adesso${remoto() ? ', come file nel repo GitHub' : ''}. Il nome si può cambiare anche dopo, dalla lista.</p>
     <div class="sbar"><button class="btn" data-az="salvaNome">Salva</button></div>
   </div>`;
@@ -1074,13 +1123,7 @@ function pannelloSalva() {
 
 function pannelloGitHub() {
   return `<div class="sheet" role="dialog" aria-label="Collegamento a GitHub">
-    <div class="shead">
-      <span class="stit">GitHub</span>
-      <span style="display:flex;gap:6px">
-        <button class="btn ghost" data-apri="salvataggi">Indietro</button>
-        <button class="btn ghost" data-chiudi>Chiudi</button>
-      </span>
-    </div>
+    ${testa('GitHub')}
     <p class="nota">Con GitHub collegato ogni salvataggio diventa un file JSON nella cartella <b>salvataggi</b> del repo, uguale su PC e telefono, con tutta la storia delle versioni. Il token resta solo in questo browser: va incollato una volta per dispositivo.</p>
     <ol class="passi">
       <li><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Crea un token</a> di tipo fine-grained: in "Repository access" scegli solo il repo qui sotto, in "Permissions" dai a <b>Contents</b> il livello <b>Read and write</b>.</li>
@@ -1114,7 +1157,7 @@ async function collegaGh(repo, token) {
     mostra(`Collegato a ${repo}${info.private ? '' : ' (repo pubblico: i salvataggi sono visibili a tutti)'}`, 'ok');
     avviso('GitHub collegato');
     await ricaricaRemoto();
-    apriSnap(false);
+    rinfresca();
   } catch (e) {
     gh = prima;
     mostra(e.message, 'err');
@@ -1124,27 +1167,56 @@ function scollegaGh() {
   gh = { repo: '', token: '' }; salvaGh();
   snapRemoti = []; correnteRemoto = null; statoGh.errore = ''; statoGh.aggiornato = null;
   setAll('.nSnap', lista().length);
-  avviso('GitHub scollegato: i salvataggi tornano locali');
-  apriPannello(pannelloGitHub(), 'github');
+  avviso('GitHub scollegato: le strategie tornano locali');
+  rinfresca();
 }
 
-function apriPannello(html, nome) { pannelloAperto = nome || null; $overlay.innerHTML = html; $overlay.hidden = false; aggiorna(); }
-function apriSnap(ricarica = true) {
-  apriPannello(pannelloSnap(), 'salvataggi');
-  if (ricarica && remoto()) ricaricaRemoto();
-}
-function chiudiSnap() { pannelloAperto = null; $overlay.hidden = true; $overlay.innerHTML = ''; }
 const PANNELLI = { salvataggi: pannelloSnap, impostazioni: pannelloImpostazioni, torta: pannelloTorta, github: pannelloGitHub, salva: pannelloSalva };
 
-/* legge il nome scritto nel pannello e crea il salvataggio */
+/* apre un pannello per nome; quello attuale finisce nella pila per Indietro */
+function apri(nome) {
+  if (pannelloAperto && pannelloAperto !== nome) pila.push(pannelloAperto);
+  pannelloAperto = nome;
+  $overlay.innerHTML = PANNELLI[nome]();
+  $overlay.hidden = false;
+  aggiorna();
+  if (nome === 'salvataggi' && remoto()) ricaricaRemoto();
+  if (nome === 'salva') { const $n = document.getElementById('nomeSnap'); if ($n) $n.focus(); }
+}
+/* ridisegna il pannello aperto senza toccare la pila */
+function rinfresca() {
+  if (!pannelloAperto || $overlay.hidden) return;
+  $overlay.innerHTML = PANNELLI[pannelloAperto]();
+  aggiorna();
+}
+/* come rinfresca, ma non interrompe chi sta scrivendo un nome */
+function rinfrescaSeLibero() {
+  const a = document.activeElement;
+  if (a && (a.classList.contains('snome') || a.id === 'nomeSnap' || a.id === 'ghToken' || a.id === 'ghRepo')) return;
+  rinfresca();
+}
+function indietro() {
+  const p = pila.pop();
+  if (!p) { chiudiSnap(); return; }
+  pannelloAperto = p;
+  $overlay.innerHTML = PANNELLI[p]();
+  aggiorna();
+}
+function apriSnap() { apri('salvataggi'); }
+function chiudiSnap() { pannelloAperto = null; pila = []; $overlay.hidden = true; $overlay.innerHTML = ''; }
+
+/* legge il nome scritto nel pannello e crea la strategia, poi mostra la lista */
 async function salvaConNome(bottone) {
   const $n = document.getElementById('nomeSnap');
-  const nome = ($n ? $n.value : '').trim() || `Salvataggio ${lista().length + 1}`;
+  const nome = ($n ? $n.value : '').trim() || `Strategia ${lista().length + 1}`;
   if (bottone) { bottone.disabled = true; bottone.textContent = 'Salvo…'; }
   salvaSubito();
   const ok = await creaSnap(nome, stato);
-  if (ok) { avviso(`Salvato: ${nome}`); apriSnap(false); }
-  else if (bottone) { bottone.disabled = false; bottone.textContent = 'Salva'; }
+  if (ok) {
+    avviso(`Salvata: ${nome}`);
+    if (pila[pila.length - 1] === 'salvataggi') pila.pop();
+    pannelloAperto = 'salvataggi'; rinfresca();
+  } else if (bottone) { bottone.disabled = false; bottone.textContent = 'Salva'; }
 }
 
 function esporta() {
@@ -1179,7 +1251,7 @@ function importa(file) {
     if (nuovi.length === 0) { avviso('Nessun salvataggio nuovo nel file'); return; }
     let n = 0;
     for (const s of nuovi) { if (await aggiungiSnap(s)) n++; else break; }
-    apriSnap(false);
+    rinfresca();
     avviso(n === 1 ? '1 salvataggio importato' : `${n} salvataggi importati`);
   };
   fr.readAsText(file);
@@ -1289,25 +1361,21 @@ document.addEventListener('click', e => {
   }
 
   const az = e.target.closest('[data-az]');
-  if (az && az.dataset.az === 'salva') {
-    apriPannello(pannelloSalva(), 'salva');
-    const $n = document.getElementById('nomeSnap');
-    if ($n) $n.focus();
-    return;
-  }
+  if (az && az.dataset.az === 'salva') { apri('salva'); return; }
   if (az && az.dataset.az === 'salvaNome') { salvaConNome(az); return; }
+  if (az && az.dataset.az === 'indietro') { indietro(); return; }
   if (az && az.dataset.az === 'azzera') {
-    conferma(az, 'Confermi?', () => { stato = iniziale(); disegna(); salvaSubito(); chiudiSnap(); });
+    conferma(az, 'Confermi? Svuota tutto', () => { stato = iniziale(); disegna(); salvaSubito(); chiudiSnap(); avviso('Asta azzerata'); });
     return;
   }
   if (az && az.dataset.az === 'sincronizza') {
     az.disabled = true; az.textContent = 'Invio…';
-    sincronizzaCorrente().then(() => apriSnap(false));
+    sincronizzaCorrente().then(() => rinfresca());
     return;
   }
   if (az && az.dataset.az === 'migra') {
-    az.disabled = true; az.textContent = 'Trasferimento…';
-    migraLocali().then(() => apriSnap(false));
+    az.disabled = true;
+    migraLocali().then(() => rinfresca());
     return;
   }
   if (az && az.dataset.az === 'ghCollega') {
@@ -1317,11 +1385,8 @@ document.addEventListener('click', e => {
   }
   if (az && az.dataset.az === 'ghScollega') { conferma(az, 'Confermi?', scollegaGh); return; }
 
-  const apri = e.target.closest('[data-apri]');
-  if (apri) {
-    if (apri.dataset.apri === 'salvataggi') apriSnap(); else apriPannello(PANNELLI[apri.dataset.apri](), apri.dataset.apri);
-    return;
-  }
+  const daAprire = e.target.closest('[data-apri]');
+  if (daAprire) { apri(daAprire.dataset.apri); return; }
   if (e.target.closest('[data-chiudi]') || e.target === $overlay) { chiudiSnap(); return; }
   if (e.target.id === 'esporta') { esporta(); return; }
 
@@ -1334,7 +1399,7 @@ document.addEventListener('click', e => {
     const prima = clona(stato);
     stato = clona(s.stato);
     disegna(); salvaSubito(); chiudiSnap();
-    avviso(`Caricato: ${s.nome || 'senza nome'}`, 'Annulla', () => { stato = prima; disegna(); salvaSubito(); avviso('Ripristinato'); });
+    avviso(`Caricata: ${s.nome || 'senza nome'}`, 'Annulla', () => { stato = prima; disegna(); salvaSubito(); avviso('Ripristinato'); });
     return;
   }
   const sovrascrivi = e.target.closest('[data-sovrascrivi]');
@@ -1343,7 +1408,7 @@ document.addEventListener('click', e => {
       const s = lista().find(x => x.id === sovrascrivi.dataset.sovrascrivi);
       if (!s) return;
       aggiornaSnap(s, { stato: clona(stato), data: new Date().toISOString() }, `Aggiornato: ${s.nome || s.id}`)
-        .then(ok => { if (ok) avviso(`Aggiornato: ${s.nome || 'senza nome'}`); apriSnap(false); });
+        .then(ok => { if (ok) avviso(`Aggiornata: ${s.nome || 'senza nome'}`); rinfresca(); });
     });
     return;
   }
@@ -1351,7 +1416,7 @@ document.addEventListener('click', e => {
   if (elimina) {
     conferma(elimina, 'Elimino?', () => {
       const s = lista().find(x => x.id === elimina.dataset.elimina);
-      if (s) eliminaSnap(s).then(() => apriSnap(false));
+      if (s) eliminaSnap(s).then(() => rinfresca());
     });
     return;
   }
