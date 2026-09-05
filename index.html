@@ -93,7 +93,29 @@
   }
   .ico:hover { border-color: rgba(255,255,255,0.2); color: var(--text-1); }
   .ico svg { width: 20px; height: 20px; }
-  .azioni .ico { width: 38px; height: 38px; }
+  .ico.att { color: var(--neg); border-color: rgba(224,101,92,0.55); background: rgba(224,101,92,0.12); }
+  .ico:disabled { opacity: 0.35; cursor: default; }
+
+  /* riga della strategia in vista */
+  .strat { display: flex; align-items: center; gap: 6px; }
+  .strat .snm {
+    flex: 1; min-width: 0; text-align: left; background: none; border: none; padding: 0; cursor: pointer;
+    font: inherit; color: var(--text-1); display: flex; flex-direction: column; gap: 1px;
+  }
+  .strat .snm small { font-size: 10px; color: var(--text-4); letter-spacing: 0.12em; }
+  .strat .snm .mNome { font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .strat .snm .mNome.vuota { color: var(--text-4); font-weight: 400; }
+  .strat .snm:hover .mNome { color: var(--piano); }
+  .strat .mini {
+    height: 32px; padding: 0 10px; border-radius: 8px; cursor: pointer; font: inherit; font-size: 12px;
+    border: 1px solid var(--edge); background: none; color: var(--text-4); flex: none;
+  }
+  .strat .mini:hover { color: var(--text-2); border-color: rgba(255,255,255,0.2); }
+  .strat .mini.att { color: var(--neg); border-color: rgba(224,101,92,0.55); }
+  .ico.piccolo { width: 32px; height: 32px; border-radius: 8px; }
+  .ico.piccolo svg { width: 17px; height: 17px; }
+  .totali .strat { margin-bottom: 10px; }
+  .totali .strat + .sep { margin: 0 0 6px; }
 
   /* ——— tabella riepilogo ——— */
   /* orizzontale e minimale: reparti in colonna, tre righe (strategia, live, delta),
@@ -127,41 +149,6 @@
   .tb .delta.su { color: var(--neg); }
   .tb .delta.giu { color: var(--pos); }
 
-  /* ——— torta ——— */
-  .torta { flex: 1 1 400px; min-width: 300px; max-width: 500px; padding: 14px 18px 12px; display: flex; flex-direction: column; position: relative; }
-  .torta svg [data-fetta] { transition: transform .13s ease, filter .13s ease; cursor: pointer; }
-  .torta svg [data-fetta].su { filter: brightness(1.13); transform: translateY(-3px); }
-  .tip {
-    position: absolute; z-index: 5; pointer-events: none;
-    display: flex; align-items: center; gap: 8px; white-space: nowrap;
-    padding: 6px 10px; border-radius: 8px; font-size: 12px; color: var(--text-2);
-    background: #12151a; box-shadow: 0 6px 18px rgba(0,0,0,0.55), inset 0 0 0 1px var(--edge);
-  }
-  .tip[hidden] { display: none; }
-  .tip i { width: 8px; height: 8px; border-radius: 2px; flex: none; }
-  .tip b { color: var(--text-1); font-weight: 500; font-variant-numeric: tabular-nums; }
-  .tip em { font-style: normal; color: var(--text-4); font-variant-numeric: tabular-nums; }
-  .tabs { display: flex; gap: 6px; }
-  .tabs button {
-    flex: 1; padding: 7px 0; border-radius: 7px; cursor: pointer; font: inherit;
-    font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
-    background: none; border: 1px solid var(--edge); color: var(--text-4);
-  }
-  .tabs button:hover { color: var(--text-2); }
-  .tabs button.on[data-vista="p"] { color: var(--piano); border-color: rgba(139,131,230,0.5); background: rgba(139,131,230,0.13); }
-  .tabs button.on[data-vista="l"] { color: var(--live);  border-color: rgba(53,177,164,0.5);  background: rgba(53,177,164,0.13); }
-  .tbody { display: flex; align-items: center; gap: 16px; margin-top: auto; flex-wrap: wrap; }
-  .torta svg { display: block; flex: 1 1 220px; min-width: 200px; max-width: 300px; }
-  .leg { flex: 0 0 158px; display: flex; flex-direction: column; gap: 7px; }
-  .leg div {
-    display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-3);
-    padding: 3px 5px; margin: -3px -5px; border-radius: 6px; transition: background .13s; cursor: pointer;
-  }
-  .leg div.su { background: rgba(255,255,255,0.06); }
-  .leg .cr { color: var(--text-4); }
-  .leg i { width: 8px; height: 8px; border-radius: 2px; flex: none; }
-  .leg b { margin-left: auto; color: var(--text-2); font-weight: 500; font-variant-numeric: tabular-nums; }
-  .leg em { font-style: normal; color: var(--text-4); font-variant-numeric: tabular-nums; min-width: 40px; text-align: right; }
 
   .sr-only {
     position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
@@ -284,7 +271,6 @@
   .sbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
   .sheet .riga { padding: 10px 0; }
   .sheet .sep { margin: 6px 0 4px; }
-  .sheet .torta { padding: 4px 0 0; background: none; box-shadow: none; }
   .nota { font-size: 12px; color: var(--text-4); margin: 0 0 8px; line-height: 1.45; }
   .vuoto { font-size: 13px; color: var(--text-4); margin: 18px 0 8px; text-align: center; }
   .btn {
@@ -350,12 +336,8 @@
     /* lo sticky va sul contenitore diretto di .wrap, altrimenti resta chiuso in un div alto quanto la barra */
     #mbar { order: -1; position: sticky; top: 0; z-index: 20; }
     .summaries { flex-direction: column; gap: 12px; margin-bottom: 12px; }
-    /* totali e torta escono dal flusso: vivono nell'intestazione e nei pannelli */
-    .summaries .totali, .summaries .torta { display: none; }
-    .torta { flex: none; min-width: 0; max-width: none; }
-    .torta svg { flex: 0 0 auto; width: 250px; max-width: 100%; margin: 0 auto; }
-    .leg { flex: 1 1 100%; }
-    .tbody { margin-top: 12px; }
+    /* la card totali esce dal flusso: vive nell'intestazione fissa */
+    .summaries .totali { display: none; }
     .residuo .v { font-size: 36px; }
 
     .tr { grid-template-columns: 62px repeat(5, minmax(0,1fr)); column-gap: 5px; }
@@ -371,7 +353,11 @@
       -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--edge);
     }
-    .mtop { display: flex; align-items: center; gap: 18px; }
+    .mbar .strat { margin-bottom: 8px; }
+    .mtop { display: flex; align-items: center; gap: 16px; }
+    .mval.sl { align-items: flex-end; }
+    .mval.sl b { font-size: 16px; color: var(--text-2); }
+    .mico { align-items: center; gap: 10px; }
     .mval { display: flex; flex-direction: column; gap: 1px; }
     .mval .k { font-size: 10px; }
     .mval b { font-size: 24px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
@@ -527,8 +513,20 @@ $toast.addEventListener('click', e => {
 });
 
 /* ——— render ——— */
+/* riga con il nome della strategia in vista e le sue azioni: azzera, cestina, impostazioni */
+function rigaStrategia() {
+  return `<div class="strat">
+    <button class="snm" data-apri="salvataggi" title="Apri le strategie"><small>STRATEGIA</small><span class="mNome">…</span></button>
+    <button class="mini" data-az="azzera" title="Svuota tutti gli slot e riporta il budget a 500">Azzera</button>
+    <button class="ico piccolo" data-az="cestina" aria-label="Elimina questa strategia" title="Elimina questa strategia">${ICO.cestino}</button>
+    <button class="ico piccolo" data-apri="impostazioni" aria-label="Impostazioni" title="Impostazioni">${ICO.impostazioni}</button>
+  </div>`;
+}
+
 function colonnaTotali() {
   return `<div class="card totali">
+    ${rigaStrategia()}
+    <div class="sep"></div>
     <div class="residuo rtop">
       <div>
         <span class="k">RESIDUO</span>
@@ -552,7 +550,6 @@ function colonnaTotali() {
     <div class="azioni">
       <button class="az primaria" data-az="salva">Salva strategia</button>
       <button class="az" data-apri="salvataggi">Strategie<b class="nSnap">${lista().length}</b></button>
-      <button class="ico" data-apri="impostazioni" aria-label="Impostazioni" title="Impostazioni">${ICO.impostazioni}</button>
     </div>
   </div>`;
 }
@@ -596,10 +593,6 @@ function pannelloImpostazioni() {
       <span class="rk">BUDGET</span>
       <input class="budget" inputmode="decimal" aria-label="Budget" value="${cr(stato.budget)}">
     </div>
-    <div class="riga">
-      <span class="rk">SLOT LIVE</span>
-      <span class="rv slotTot">0 / 0</span>
-    </div>
 
     <div class="sez">STRATEGIE</div>
     <button class="voce primaria" data-az="salva">
@@ -616,22 +609,11 @@ function pannelloImpostazioni() {
       <label class="btn" for="importa">Importa backup</label>
       <input type="file" id="importa" accept="application/json,.json" hidden>
     </div>
-
-    <div class="sez rischio">AZZERA</div>
-    <p class="nota">Svuota tutti gli slot di strategia e live e riporta il budget a 500. Le strategie salvate non si toccano.</p>
-    <button class="btn rosso" data-az="azzera">Azzera l'asta</button>
-  </div>`;
-}
-
-function pannelloTorta() {
-  return `<div class="sheet" role="dialog" aria-label="Ripartizione per reparto">
-    ${testa('Ripartizione')}
-    ${torta()}
   </div>`;
 }
 
 const ICO = {
-  torta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.2 15.9A10 10 0 1 1 8 2.8"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>',
+  cestino: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>',
   impostazioni: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
 };
 
@@ -661,107 +643,17 @@ function tabella() {
 /* un valore in crediti reso nell'unità scelta per la tabella */
 const inUnita = v => unita === 'cr' ? (cr(v) || '0') : pcFmt(quota(v));
 
-let vista = 'p';                                   // quale serie mostra la torta
 let reparto = 0;                                   // reparto visibile sul telefono
-
-function scuro(hex, f) {
-  const n = parseInt(hex.slice(1), 16);
-  return '#' + [(n >> 16) & 255, (n >> 8) & 255, n & 255]
-    .map(v => Math.round(v * f).toString(16).padStart(2, '0')).join('');
-}
-
-function chiaro(hex, f) {
-  const n = parseInt(hex.slice(1), 16);
-  return '#' + [(n >> 16) & 255, (n >> 8) & 255, n & 255]
-    .map(v => Math.round(v + (255 - v) * f).toString(16).padStart(2, '0')).join('');
-}
-
-let datiTorta = [];
-
-function torta() {
-  const dati = stato.ruoli.map(r => ({ nome: r.nome, hex: r.hex, v: somma(r, vista) }));
-  const tot = dati.reduce((a, d) => a + d.v, 0);
-  dati.forEach(d => { d.pc = tot > 0 ? pcFmt((d.v / tot) * 100) : '—'; });
-  datiTorta = dati;
-
-  const cx = 150, cy = 62, rx = 104, ry = 50, prof = 26;
-  const P = a => [cx + rx * Math.cos(a), cy + ry * Math.sin(a)];
-  const f1 = n => n.toFixed(1);
-  const bordo = 'stroke="rgba(0,0,0,0.45)" stroke-width="1.1" stroke-linejoin="round"';
-
-  const defs = dati.map((d, i) => `
-    <linearGradient id="gt${i}" x1="0.15" y1="0" x2="0.6" y2="1">
-      <stop offset="0" stop-color="${chiaro(d.hex, 0.32)}"/><stop offset="1" stop-color="${d.hex}"/>
-    </linearGradient>
-    <linearGradient id="gw${i}" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="${scuro(d.hex, 0.72)}"/><stop offset="1" stop-color="${scuro(d.hex, 0.4)}"/>
-    </linearGradient>`).join('');
-
-  let muri = '', facce = '';
-  if (tot > 0) {
-    let a = -Math.PI / 2;
-    dati.forEach((d, i) => {
-      if (d.v <= 0) return;
-      const ang = (d.v / tot) * Math.PI * 2;
-      const a0 = a, a1 = a + ang; a = a1;
-      const [x0, y0] = P(a0), [x1, y1] = P(a1);
-      const g = ang > Math.PI ? 1 : 0;
-
-      facce += ang >= Math.PI * 2 - 1e-9
-        ? `<ellipse data-fetta="${i}" cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#gt${i})" ${bordo}/>`
-        : `<path data-fetta="${i}" d="M${cx} ${cy}L${f1(x0)} ${f1(y0)}A${rx} ${ry} 0 ${g} 1 ${f1(x1)} ${f1(y1)}Z" fill="url(#gt${i})" ${bordo}/>`;
-
-      // parete: solo la porzione di arco rivolta verso di noi
-      const b0 = Math.max(a0, 0), b1 = Math.min(a1, Math.PI);
-      if (b1 > b0) {
-        const [mx0, my0] = P(b0), [mx1, my1] = P(b1);
-        const gm = (b1 - b0) > Math.PI ? 1 : 0;
-        muri += `<path data-fetta="${i}" d="M${f1(mx0)} ${f1(my0)}A${rx} ${ry} 0 ${gm} 1 ${f1(mx1)} ${f1(my1)}`
-             +  `L${f1(mx1)} ${f1(my1 + prof)}A${rx} ${ry} 0 ${gm} 0 ${f1(mx0)} ${f1(my0 + prof)}Z" fill="url(#gw${i})" ${bordo}/>`;
-      }
-    });
-  } else {
-    muri = `<path d="M${cx - rx} ${cy}A${rx} ${ry} 0 0 0 ${cx + rx} ${cy}L${cx + rx} ${cy + prof}`
-         + `A${rx} ${ry} 0 0 1 ${cx - rx} ${cy + prof}Z" fill="rgba(255,255,255,0.05)"/>`;
-    facce = `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="rgba(255,255,255,0.05)"
-      stroke="rgba(255,255,255,0.16)" stroke-dasharray="4 5"/>`;
-  }
-
-  const legenda = dati.map((d, i) => `<div data-fetta="${i}">
-    <i style="background:${d.hex}"></i>${d.nome}
-    <b>${cr(d.v) || '0'} <span class="cr">cr</span></b><em>${d.pc}</em>
-  </div>`).join('');
-
-  return `<div class="card torta">
-    <div class="tabs">
-      <button data-vista="p" class="${vista === 'p' ? 'on' : ''}">STRATEGIA</button>
-      <button data-vista="l" class="${vista === 'l' ? 'on' : ''}">LIVE</button>
-    </div>
-    <div class="tbody">
-    <svg viewBox="0 0 300 152" role="img" aria-label="Ripartizione ${vista === 'p' ? 'strategia' : 'live'} per reparto">
-      <defs>${defs}
-        <filter id="ombra" x="-25%" y="-25%" width="150%" height="180%">
-          <feGaussianBlur stdDeviation="7"/>
-        </filter>
-      </defs>
-      <ellipse cx="${cx}" cy="${cy + prof + 6}" rx="${rx * 0.9}" ry="${ry * 0.5}" fill="rgba(0,0,0,0.55)" filter="url(#ombra)"/>
-      ${muri}${facce}
-    </svg>
-      <div class="leg">${legenda}</div>
-    </div>
-    <div class="tip" hidden></div>
-  </div>`;
-}
 
 /* barra fissa in alto sul telefono: residuo, offerta max e schede dei reparti */
 function barraMobile() {
   return `<div class="mbar">
+    ${rigaStrategia()}
     <div class="mtop">
       <div class="mval"><span class="k">RESIDUO</span><b id="mRes">0<span class="cr">cr</span></b></div>
       <div class="mval mx"><span class="k">OFFERTA MAX</span><b id="mMax">0<span class="cr">cr</span></b></div>
       <div class="mico">
-        <button class="ico" data-apri="torta" aria-label="Grafico a torta">${ICO.torta}</button>
-        <button class="ico" data-apri="impostazioni" aria-label="Impostazioni">${ICO.impostazioni}</button>
+        <div class="mval sl"><span class="k">SLOT</span><b class="slotTot">0 / 25</b></div>
       </div>
     </div>
   </div>`;
@@ -829,7 +721,7 @@ function blocco(ri) {
 
 function disegna() {
   if (reparto >= stato.ruoli.length) reparto = 0;
-  $sums.innerHTML = colonnaTotali() + tabella() + torta();
+  $sums.innerHTML = colonnaTotali() + tabella();
   $mbar.innerHTML = barraMobile();
   $mnav.innerHTML = navMobile();
   $grid.innerHTML = stato.ruoli.map((_, i) => blocco(i)).join('');
@@ -871,6 +763,7 @@ function aggiorna(escludi) {
   scriviDelta('tot', totL - totP, usati > 0);
 
   setAll('.slotTot', `${slotPieni} / ${slotTot}`);
+  scriviAttuale();
   document.querySelectorAll('input.budget').forEach(i => { if (i !== escludi) i.value = cr(stato.budget); });
   const barTot = document.getElementById('trackTot');
   if (barTot) barTot.style.width = (slotTot ? Math.round((slotPieni / slotTot) * 100) : 0) + '%';
@@ -892,9 +785,6 @@ function aggiorna(escludi) {
   const $mr = document.getElementById('mRes'), $mm = document.getElementById('mMax');
   if ($mr) { $mr.firstChild.textContent = cr(res) || '0'; $mr.classList.toggle('neg', res < 0); }
   if ($mm) $mm.firstChild.textContent = offMax;
-
-  const $t = document.querySelector('.torta');
-  if ($t) $t.outerHTML = torta();
 
   document.querySelectorAll('input.f').forEach(el => {
     if (el === escludi) return;
@@ -1030,11 +920,14 @@ async function aggiungiSnap(s) {
   setAll('.nSnap', lista().length);
   return ok;
 }
-function creaSnap(nome, st) {
-  return aggiungiSnap({ id: nuovoId(), nome, data: new Date().toISOString(), stato: clona(st) });
+/* crea una strategia nuova; torna l'oggetto creato oppure null se la scrittura è fallita */
+async function creaSnap(nome, st) {
+  const s = { id: nuovoId(), nome, data: new Date().toISOString(), stato: clona(st) };
+  return (await aggiungiSnap(s)) ? s : null;
 }
 async function aggiornaSnap(s, campi, messaggio) {
   Object.assign(s, campi);
+  if (attuale && attuale.id === s.id) { attuale.nome = s.nome; impostaAttuale(s); }
   if (remoto()) {
     return operazione(async () => { s.sha = await ghScrivi(`salvataggi/${s.id}.json`, fileSnap(s), s.sha, messaggio || `Aggiornato: ${s.nome || s.id}`); });
   }
@@ -1048,6 +941,7 @@ async function eliminaSnap(s) {
       snapRemoti = snapRemoti.filter(x => x !== s);
     });
   } else { snapLocali = snapLocali.filter(x => x !== s); salvaSnap(); }
+  if (ok && attuale && attuale.id === s.id) impostaAttuale(null);
   setAll('.nSnap', lista().length);
   return ok;
 }
@@ -1171,7 +1065,7 @@ function scollegaGh() {
   rinfresca();
 }
 
-const PANNELLI = { salvataggi: pannelloSnap, impostazioni: pannelloImpostazioni, torta: pannelloTorta, github: pannelloGitHub, salva: pannelloSalva };
+const PANNELLI = { salvataggi: pannelloSnap, impostazioni: pannelloImpostazioni, github: pannelloGitHub, salva: pannelloSalva };
 
 /* apre un pannello per nome; quello attuale finisce nella pila per Indietro */
 function apri(nome) {
@@ -1211,8 +1105,9 @@ async function salvaConNome(bottone) {
   const nome = ($n ? $n.value : '').trim() || `Strategia ${lista().length + 1}`;
   if (bottone) { bottone.disabled = true; bottone.textContent = 'Salvo…'; }
   salvaSubito();
-  const ok = await creaSnap(nome, stato);
-  if (ok) {
+  const creata = await creaSnap(nome, stato);
+  if (creata) {
+    impostaAttuale(creata);
     avviso(`Salvata: ${nome}`);
     if (pila[pila.length - 1] === 'salvataggi') pila.pop();
     pannelloAperto = 'salvataggi'; rinfresca();
@@ -1261,11 +1156,33 @@ function importa(file) {
 const attese = new Map();
 function conferma(b, testo, fn) {
   if (attese.has(b)) { clearTimeout(attese.get(b)); attese.delete(b); fn(); return; }
+  const icona = b.classList.contains('ico');          // i pulsanti icona cambiano solo colore
   const orig = b.textContent;
-  b.textContent = testo; b.classList.add('att');
+  if (!icona) b.textContent = testo;
+  b.classList.add('att');
   attese.set(b, setTimeout(() => {
-    attese.delete(b); b.textContent = orig; b.classList.remove('att');
+    attese.delete(b); if (!icona) b.textContent = orig; b.classList.remove('att');
   }, 4000));
+}
+
+/* ——— strategia in vista: quella caricata o salvata per ultima ——— */
+let attuale = null;   // { id, nome } oppure null
+try { const a = JSON.parse(localStorage.getItem('asta.attuale')); if (a && a.id) attuale = { id: String(a.id), nome: String(a.nome ?? '') }; } catch (e) { /* nessuna */ }
+function impostaAttuale(s) {
+  attuale = s ? { id: s.id, nome: s.nome } : null;
+  try { attuale ? localStorage.setItem('asta.attuale', JSON.stringify(attuale)) : localStorage.removeItem('asta.attuale'); } catch (e) { /* niente */ }
+  scriviAttuale();
+}
+function nomeAttuale() {
+  if (!attuale) return null;
+  const s = lista().find(x => x.id === attuale.id);
+  return (s ? s.nome : attuale.nome) || 'Senza nome';
+}
+function scriviAttuale() {
+  const pieniOra = stato.ruoli.some(r => r.slot.some(x => x.p !== null || x.l !== null));
+  const nome = nomeAttuale() || (pieniOra ? 'Non salvata' : 'Nuova strategia');
+  document.querySelectorAll('.mNome').forEach(el => { el.textContent = nome; el.classList.toggle('vuota', !attuale); });
+  document.querySelectorAll('[data-az="cestina"]').forEach(b => { b.disabled = !attuale; });
 }
 
 /* ——— eventi ——— */
@@ -1302,33 +1219,6 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && e.target.id === 'nomeSnap') { e.preventDefault(); salvaConNome(document.querySelector('[data-az="salvaNome"]')); }
 });
 
-const conMouse = window.matchMedia('(hover: hover)').matches;
-let fettaSu = null;
-function evidenzia(card, i) {
-  fettaSu = i;
-  card.querySelectorAll('[data-fetta]').forEach(n => n.classList.toggle('su', n.dataset.fetta === i));
-}
-document.addEventListener('mousemove', e => {
-  if (!conMouse) return;
-  const card = (e.target.closest && e.target.closest('.torta')) || document.querySelector('.torta');
-  if (!card) return;
-  const el = e.target.closest ? e.target.closest('[data-fetta]') : null;
-  const i = el && card.contains(el) ? el.dataset.fetta : null;
-
-  if (i !== fettaSu) evidenzia(card, i);
-  const tip = card.querySelector('.tip');
-  if (!tip) return;
-  if (i === null) { tip.hidden = true; return; }
-
-  const d = datiTorta[+i];
-  tip.innerHTML = `<i style="background:${d.hex}"></i>${d.nome}`
-    + `<b>${cr(d.v) || '0'} cr</b><em>${d.pc}</em>`;
-  tip.hidden = false;
-  const r = card.getBoundingClientRect();
-  tip.style.left = Math.max(6, Math.min(e.clientX - r.left + 14, r.width - tip.offsetWidth - 6)) + 'px';
-  tip.style.top  = Math.max(4, e.clientY - r.top - 12) + 'px';
-});
-
 document.addEventListener('click', e => {
   const add = e.target.closest('[data-add]');
   if (add) { stato.ruoli[+add.dataset.add].slot.push({ p: null, l: null }); disegna(); salva(); return; }
@@ -1341,9 +1231,6 @@ document.addEventListener('click', e => {
     aggiorna(); return;
   }
 
-  const tab = e.target.closest('[data-vista]');
-  if (tab) { vista = tab.dataset.vista; tab.closest('.torta').outerHTML = torta(); return; }
-
   const mtab = e.target.closest('[data-reparto]');
   if (mtab) {
     reparto = +mtab.dataset.reparto;
@@ -1352,20 +1239,22 @@ document.addEventListener('click', e => {
     return;
   }
 
-  /* sul touch la fetta si evidenzia col tocco, un secondo tocco la spegne */
-  const fetta = e.target.closest('.torta [data-fetta]');
-  if (fetta && !conMouse) {
-    const card = fetta.closest('.torta');
-    evidenzia(card, fetta.classList.contains('su') ? null : fetta.dataset.fetta);
-    return;
-  }
-
   const az = e.target.closest('[data-az]');
   if (az && az.dataset.az === 'salva') { apri('salva'); return; }
   if (az && az.dataset.az === 'salvaNome') { salvaConNome(az); return; }
   if (az && az.dataset.az === 'indietro') { indietro(); return; }
   if (az && az.dataset.az === 'azzera') {
-    conferma(az, 'Confermi? Svuota tutto', () => { stato = iniziale(); disegna(); salvaSubito(); chiudiSnap(); avviso('Asta azzerata'); });
+    conferma(az, 'Confermi?', () => { stato = iniziale(); impostaAttuale(null); disegna(); salvaSubito(); chiudiSnap(); avviso('Asta azzerata'); });
+    return;
+  }
+  if (az && az.dataset.az === 'cestina') {
+    if (!attuale) return;
+    conferma(az, '', () => {
+      const s = lista().find(x => x.id === attuale.id);
+      const nome = nomeAttuale();
+      const fine = () => { impostaAttuale(null); avviso(`Strategia eliminata: ${nome}`); };
+      if (s) eliminaSnap(s).then(ok => { if (ok) fine(); }); else fine();
+    });
     return;
   }
   if (az && az.dataset.az === 'sincronizza') {
@@ -1396,10 +1285,11 @@ document.addEventListener('click', e => {
     const id = carica.dataset.carica;
     const s = id === 'corrente' ? correnteRemoto && { nome: 'stato corrente sincronizzato', stato: correnteRemoto.stato } : lista().find(x => x.id === id);
     if (!s) return;
-    const prima = clona(stato);
+    const prima = clona(stato), attualePrima = attuale;
     stato = clona(s.stato);
+    impostaAttuale(id === 'corrente' ? null : s);
     disegna(); salvaSubito(); chiudiSnap();
-    avviso(`Caricata: ${s.nome || 'senza nome'}`, 'Annulla', () => { stato = prima; disegna(); salvaSubito(); avviso('Ripristinato'); });
+    avviso(`Caricata: ${s.nome || 'senza nome'}`, 'Annulla', () => { stato = prima; impostaAttuale(attualePrima); disegna(); salvaSubito(); avviso('Ripristinato'); });
     return;
   }
   const sovrascrivi = e.target.closest('[data-sovrascrivi]');
@@ -1408,7 +1298,7 @@ document.addEventListener('click', e => {
       const s = lista().find(x => x.id === sovrascrivi.dataset.sovrascrivi);
       if (!s) return;
       aggiornaSnap(s, { stato: clona(stato), data: new Date().toISOString() }, `Aggiornato: ${s.nome || s.id}`)
-        .then(ok => { if (ok) avviso(`Aggiornata: ${s.nome || 'senza nome'}`); rinfresca(); });
+        .then(ok => { if (ok) { impostaAttuale(s); avviso(`Aggiornata: ${s.nome || 'senza nome'}`); } rinfresca(); });
     });
     return;
   }
