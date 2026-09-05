@@ -1,0 +1,138 @@
+{
+  "id": "mto814767w1n",
+  "nome": "Strategia ISOL",
+  "data": "2026-09-05T10:09:35.106Z",
+  "stato": {
+    "budget": 500,
+    "ruoli": [
+      {
+        "nome": "POR",
+        "ini": "P",
+        "hex": "#e0a54a",
+        "slot": [
+          {
+            "p": 43,
+            "l": null
+          },
+          {
+            "p": 1,
+            "l": null
+          },
+          {
+            "p": 1,
+            "l": null
+          }
+        ]
+      },
+      {
+        "nome": "DIF",
+        "ini": "D",
+        "hex": "#5cba85",
+        "slot": [
+          {
+            "p": 30,
+            "l": null
+          },
+          {
+            "p": 20,
+            "l": null
+          },
+          {
+            "p": 16,
+            "l": null
+          },
+          {
+            "p": 13,
+            "l": null
+          },
+          {
+            "p": 8,
+            "l": null
+          },
+          {
+            "p": 6,
+            "l": null
+          },
+          {
+            "p": 1,
+            "l": null
+          },
+          {
+            "p": 1,
+            "l": null
+          }
+        ]
+      },
+      {
+        "nome": "CEN",
+        "ini": "C",
+        "hex": "#6b9ee0",
+        "slot": [
+          {
+            "p": 40,
+            "l": null
+          },
+          {
+            "p": 40,
+            "l": null
+          },
+          {
+            "p": 12,
+            "l": null
+          },
+          {
+            "p": 8,
+            "l": null
+          },
+          {
+            "p": 4,
+            "l": null
+          },
+          {
+            "p": 4,
+            "l": null
+          },
+          {
+            "p": 1,
+            "l": null
+          },
+          {
+            "p": 1,
+            "l": null
+          }
+        ]
+      },
+      {
+        "nome": "ATT",
+        "ini": "A",
+        "hex": "#e0655c",
+        "slot": [
+          {
+            "p": 110,
+            "l": null
+          },
+          {
+            "p": 80,
+            "l": null
+          },
+          {
+            "p": 45,
+            "l": null
+          },
+          {
+            "p": 10,
+            "l": null
+          },
+          {
+            "p": 4,
+            "l": null
+          },
+          {
+            "p": 1,
+            "l": null
+          }
+        ]
+      }
+    ]
+  }
+}
