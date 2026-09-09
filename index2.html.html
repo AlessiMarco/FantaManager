@@ -1,0 +1,369 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#ffffff"><title>Strategia d’asta · live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* shadcn/ui zinc tokens */
+:root{
+ --background:#ffffff;--foreground:#09090b;--card:#ffffff;--muted:#f1f1f3;--muted-fg:#52525b;--border:#cfcfd6;--input:#b8b8c2;--ring:#18181b;--primary:#18181b;--primary-fg:#fafafa;--secondary:#f4f4f5;--secondary-fg:#18181b;
+ --pos:#16a34a;--pos-bg:#f0fdf4;--pos-bd:#bbf7d0;--neg:#dc2626;--neg-bg:#fef2f2;--neg-bd:#fecaca;--accent:#2563eb;
+ --radius:.75rem;--shadow:0 1px 2px 0 rgb(0 0 0 / .08),0 0 0 1px rgb(0 0 0 / .02);--shadow-md:0 1px 3px 0 rgb(0 0 0 / .06),0 4px 12px -4px rgb(0 0 0 / .08);
+ --font:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:126px;-webkit-text-size-adjust:100%}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+body{margin:0;background:var(--background);color:var(--foreground);font:14px/1.5 var(--font);-webkit-font-smoothing:antialiased;font-feature-settings:"cv11","ss01";font-variant-numeric:tabular-nums}
+button,input{font:inherit;color:inherit}
+.wrap{max-width:880px;margin:0 auto;padding:0 20px calc(48px + env(safe-area-inset-bottom))}
+h1,h2,h3,h4{margin:0;font-weight:600;letter-spacing:-.01em}
+.muted{color:var(--muted-fg)}.mono{font-family:var(--mono);font-weight:600}
+.dot{display:inline-block;width:8px;height:8px;border-radius:9999px;background:var(--c);flex:none}
+
+/* cards */
+.card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md)}
+.card-h{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:18px 20px 12px}
+.card-title{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;letter-spacing:-.01em}
+.card-desc{margin:4px 0 0;font-size:13px;color:var(--muted-fg);line-height:1.45;max-width:560px}.card-desc:empty{display:none}
+
+/* badges */
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:9999px;padding:2px 8px;font-size:12px;font-weight:600;line-height:1.4;white-space:nowrap}
+.badge.outline{border:1.5px solid #a1a1aa;background:var(--card);color:var(--foreground);font-family:var(--mono);font-size:12px;min-width:38px;justify-content:center}
+.badge.secondary{background:#e9e9ee;color:#3f3f46;font-weight:500}
+.delta{display:inline-flex;align-items:center;gap:3px;border-radius:9999px;padding:2px 8px;font-size:12px;font-weight:600;white-space:nowrap;border:1px solid transparent}
+.delta:empty{display:none}
+.delta.pos{color:var(--pos);background:var(--pos-bg);border-color:var(--pos-bd)}.delta.neg{color:var(--neg);background:var(--neg-bg);border-color:var(--neg-bd)}
+.delta::before{font-size:9px}.delta.pos::before{content:"▼"}.delta.neg::before{content:"▲"}.delta.zero::before{content:"•"}.delta.zero{color:var(--muted-fg);background:var(--muted);border-color:var(--border)}
+
+/* period tabs (strategy switch) */
+.tabs{display:inline-grid;grid-template-columns:1fr 1fr;background:#e9e9ee;border-radius:8px;padding:3px;margin-top:20px;width:100%}
+.tabs button{border:0;background:transparent;border-radius:6px;padding:7px 12px;font-size:13px;font-weight:500;color:var(--muted-fg);cursor:pointer;text-align:left;transition:background .15s,color .15s,box-shadow .15s}
+.tabs button small{display:block;font-size:11.5px;font-weight:400;color:var(--muted-fg)}
+.tabs button.on{background:var(--card);color:var(--foreground);box-shadow:0 1px 3px rgb(0 0 0 / .12),0 0 0 1px rgb(0 0 0 / .06)}.tabs button.on small{color:var(--muted-fg)}
+.tabs button:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+
+/* KPI row */
+.top{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.94);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);margin:14px -20px 0;padding:10px 20px;border-bottom:1px solid var(--border)}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kpi{padding:10px 14px 11px}
+.kpi .k{font-size:12px;font-weight:500;color:var(--muted-fg);letter-spacing:0}
+.kpi .v{display:flex;align-items:baseline;gap:6px;margin-top:2px}
+.kpi .v b{font-size:26px;font-weight:600;letter-spacing:-.03em;line-height:1.1;font-family:var(--mono)}
+.kpi .v span{font-size:12px;color:var(--muted-fg)}
+.kpi.hi .v b{color:var(--accent)}
+nav{display:flex;gap:4px;margin-top:10px;background:#e9e9ee;border-radius:8px;padding:3px}
+nav a{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;color:var(--muted-fg);font-size:12.5px;font-weight:500;padding:6px 0;border-radius:6px;transition:background .15s,color .15s}
+nav a.on{background:var(--card);color:var(--foreground);box-shadow:0 1px 3px rgb(0 0 0 / .12),0 0 0 1px rgb(0 0 0 / .06)}
+
+/* distribution card */
+.dist{margin-top:16px}
+.dbar{display:flex;height:10px;border-radius:9999px;overflow:hidden;gap:2px;margin:0 20px}.dbar i{display:block;height:100%}
+.drows{padding:10px 20px 6px}
+.drow{display:grid;grid-template-columns:118px 1fr 92px 64px;gap:12px;align-items:center;padding:7px 0;border-top:1px solid #e4e4e7}
+.drow:first-child{border-top:0}
+.dl{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600}
+.dv{text-align:right;font-family:var(--mono);font-size:13px;font-weight:600}.dv .lv{color:var(--accent)}.dv .muted{font-weight:500;color:var(--muted-fg)}
+.dd{text-align:right}
+.drow.total{border-top:1px dashed var(--border);margin-top:2px}.drow.total .dl{font-weight:600}
+.tick{display:flex;gap:2px;height:14px;align-items:center}.tick i{flex:1;height:10px;border-radius:2px;background:#e4e4e7;transition:background .15s}
+.tick i.on{background:var(--c)}.tick i.over{background:var(--neg)}
+.tools{display:flex;justify-content:flex-end;padding:0 20px 14px}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:var(--card);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:500;cursor:pointer;box-shadow:var(--shadow);transition:background .15s,border-color .15s}
+.btn:hover{background:var(--muted)}.btn.destructive{color:var(--neg)}.btn.destructive:hover{background:var(--neg-bg);border-color:var(--neg-bd)}
+
+/* department tables */
+.dept{margin-top:16px}
+.mini{text-align:right;min-width:150px}.mini-k{font-size:11.5px;color:var(--muted-fg)}.mini-v{font-family:var(--mono);font-size:18px;font-weight:600;letter-spacing:-.02em;line-height:1.2;margin:1px 0 4px}.mini-v .lv{color:var(--accent)}.mini-v .sep{color:var(--muted-fg);margin:0 3px;font-weight:500}
+.table{padding:0 20px 8px}
+.thead,.row{display:grid;grid-template-columns:56px 52px 74px 96px 1fr;gap:12px;align-items:center}
+.thead{padding:8px 0 6px;font-size:11.5px;font-weight:600;color:var(--muted-fg);border-bottom:1.5px solid var(--border)}
+.row{padding:9px 0;border-bottom:1px solid #e4e4e7}.row:last-child{border-bottom:0}
+.row:hover{background:linear-gradient(90deg,transparent,#fafafa 8%,#fafafa 92%,transparent)}
+.c2 .mono{font-size:15px}
+.input{display:flex;align-items:center;height:36px;width:74px;border:1px solid var(--input);border-radius:8px;background:var(--card);box-shadow:var(--shadow);padding:0 8px 0 2px;transition:border-color .15s,box-shadow .15s}
+.input input{width:100%;min-width:0;border:0;background:transparent;outline:0;text-align:right;font-family:var(--mono);font-size:15px;font-weight:600;padding:0 4px;-moz-appearance:textfield}
+.input input::-webkit-outer-spin-button,.input input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.input input::placeholder{color:#a1a1aa;font-weight:500}
+.input .suffix{font-size:11.5px;color:var(--muted-fg)}
+.input:focus-within{border-color:var(--ring);box-shadow:0 0 0 3px rgba(24,24,27,.12)}
+.row.done .input{border-color:var(--pos-bd);background:var(--pos-bg)}.row.done .input input{color:var(--pos)}
+.row.over .input{border-color:var(--neg-bd);background:var(--neg-bg)}.row.over .input input{color:var(--neg)}
+.c5{display:flex;align-items:center;gap:6px;min-width:0}
+.prof{flex:1;min-width:0;display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;border-radius:8px;background:#f4f4f5;border:1px dashed #cfcfd6;color:#3f3f46;font-size:13px;line-height:1.3}
+.prof-ic{color:#a1a1aa;font-size:13px;flex:none}
+.prof .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.info{flex:none;width:34px;height:34px;border-radius:8px;border:1px solid var(--input);background:var(--card);box-shadow:var(--shadow);font-size:20px;line-height:1;color:var(--foreground);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0 0 3px;transition:background .15s,border-color .15s}
+.info:hover{background:var(--muted)}.info:active{background:#e4e4e7}.info:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal[hidden]{display:none}
+.modal-bg{position:absolute;inset:0;background:rgba(9,9,11,.45);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.modal-box{position:relative;width:100%;max-width:420px;background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:0 20px 50px -12px rgb(0 0 0 / .35);padding:16px 18px 18px;animation:pop .16s ease-out}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+.modal-h{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.m-cap{font-size:13px;color:var(--muted-fg)}.m-cap b{font-family:var(--mono);color:var(--foreground);font-size:15px}
+.m-x{margin-left:auto;border:0;background:var(--muted);width:30px;height:30px;border-radius:9999px;font-size:18px;line-height:1;cursor:pointer;color:var(--muted-fg)}
+.m-t{margin:0;font-size:16px;line-height:1.45;font-weight:500}
+.m-f{margin:8px 0 0;font-size:14px;line-height:1.45;color:var(--muted-fg)}.m-f:empty{display:none}
+
+/* rules */
+.reg[data-reg]{display:none}.reg.on{display:block}.reg{margin-top:16px}
+.prose{padding:0 20px 16px}.prose h3{font-size:14px;margin:14px 0 6px}.prose ol,.prose ul{margin:0;padding-left:20px}.prose li{margin:5px 0;font-size:13.5px;line-height:1.45;color:#3f3f46}.prose li b{color:var(--foreground)}
+.callouts{display:grid;gap:8px}.callout{border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#f4f4f5}.callout h4{font-size:13.5px;margin-bottom:2px}.callout p{margin:0;font-size:13px;color:var(--muted-fg);line-height:1.45}
+.foot{margin:24px 0 0;text-align:center;color:var(--muted-fg);font-size:12px}
+
+@media(max-width:640px){
+ .wrap{padding:0 12px 48px}.top{margin:12px -12px 0;padding:8px 12px}
+ .kpis{gap:6px}.kpi{padding:8px 10px 9px}.kpi .v b{font-size:21px}
+ nav a{font-size:12px;gap:4px}
+ .card-h{padding:14px 14px 10px;flex-direction:column;gap:8px}.mini{text-align:left;min-width:0;width:100%}.mini-v{margin:0 0 4px}
+ .table{padding:0 14px 6px}.thead{display:none}
+ .row{grid-template-columns:38px 26px 58px 38px 1fr;gap:5px;padding:8px 0}
+ .c1 .badge.outline{min-width:36px;padding:2px 3px;font-size:11px}.c2 .mono{font-size:14px}
+ .input{width:58px;height:34px;padding:0 5px 0 1px}.input input{font-size:14px;padding:0 2px}.input .suffix{font-size:10px}
+ .c4{min-width:38px;text-align:left}.c4 .delta{padding:2px 5px;font-size:11px;gap:1px}.c4 .delta::before{font-size:8px}
+ .prof{height:34px;padding:0 8px;font-size:12.5px;gap:0}.prof-ic{display:none}.info{width:34px;height:34px}.c5{gap:5px}
+ .drows{padding:10px 14px 4px}.dbar{margin:0 14px}.drow{grid-template-columns:96px 1fr 78px 56px;gap:8px}.dl{font-size:12.5px}.dv{font-size:12px}
+ .tools{padding:0 14px 12px}.prose{padding:0 14px 14px}
+}
+</style></head><body><div class="wrap">
+<div class="tabs" role="tablist"><button type="button" role="tab" data-st="A">Strategia A<small>Dimarco + Malen</small></button><button type="button" role="tab" data-st="B">Strategia B<small>Malen, difesa a quattro pari</small></button></div>
+
+<div class="top">
+ <div class="kpis">
+  <div class="card kpi"><div class="k">Residuo</div><div class="v"><b id="res">500</b><span>cr</span></div></div>
+  <div class="card kpi hi"><div class="k">Offerta max</div><div class="v"><b id="omax">475</b><span>cr</span></div></div>
+  <div class="card kpi"><div class="k">Slot</div><div class="v"><b id="slots">0</b><span>/ 25</span></div></div>
+ </div>
+ <nav><a href="#P" data-nav="P"><span class="dot" style="background:#f59e0b"></span>POR</a><a href="#D" data-nav="D"><span class="dot" style="background:#10b981"></span>DIF</a><a href="#C" data-nav="C"><span class="dot" style="background:#3b82f6"></span>CEN</a><a href="#A" data-nav="A"><span class="dot" style="background:#f43f5e"></span>ATT</a><a href="#regole" data-nav="regole">Regole</a></nav>
+</div>
+
+<section class="card dist">
+ <div class="card-h"><div><div class="card-title">Budget per reparto</div><p class="card-desc">Tetti della strategia, speso live e delta. I tetti sommano 500.</p></div><span class="delta" data-x="T"></span></div>
+ <div class="dbar" id="dbar"></div>
+ <div class="drows"><div class="drow"><span class="dl"><span class="dot" style="background:#f59e0b"></span>Portieri</span><span class="dtick tick" data-tick2="P"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="dv"><b class="lv" data-l="P">0</b><span class="muted"> / <span data-s="P"></span></span></span><span class="dd"><span class="delta" data-x="P"></span></span></div><div class="drow"><span class="dl"><span class="dot" style="background:#10b981"></span>Difesa</span><span class="dtick tick" data-tick2="D"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="dv"><b class="lv" data-l="D">0</b><span class="muted"> / <span data-s="D"></span></span></span><span class="dd"><span class="delta" data-x="D"></span></span></div><div class="drow"><span class="dl"><span class="dot" style="background:#3b82f6"></span>Centrocampo</span><span class="dtick tick" data-tick2="C"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="dv"><b class="lv" data-l="C">0</b><span class="muted"> / <span data-s="C"></span></span></span><span class="dd"><span class="delta" data-x="C"></span></span></div><div class="drow"><span class="dl"><span class="dot" style="background:#f43f5e"></span>Attacco</span><span class="dtick tick" data-tick2="A"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="dv"><b class="lv" data-l="A">0</b><span class="muted"> / <span data-s="A"></span></span></span><span class="dd"><span class="delta" data-x="A"></span></span></div><div class="drow total"><span class="dl">Totale</span><span></span><span class="dv"><b class="lv" data-l="T">0</b><span class="muted"> / <span data-s="T"></span></span></span><span class="dd"></span></div></div>
+ <div class="tools"><button id="reset" type="button" class="btn destructive">Azzera live</button></div>
+</section>
+
+<section class="card dept" id="P" style="--c:#f59e0b">
+ <div class="card-h">
+  <div><div class="card-title"><span class="dot"></span>Portieri<span class="badge secondary" data-cnt="P">0/3</span></div><p class="card-desc" data-note="P"></p></div>
+  <div class="mini"><div class="mini-k">Live / tetto</div><div class="mini-v"><span class="lv" data-lv="P">0</span><span class="sep">/</span><span data-lv-cap="P"></span></div><div class="tick" data-tick="P"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+ </div>
+ <div class="table"><div class="thead"><span>Slot</span><span>Tetto</span><span>Live</span><span>Delta</span><span class="hw">Profilo del giocatore · › per il dettaglio</span></div><div class="row" data-slot="P1">
+ <div class="c1"><span class="badge outline">P1</span></div>
+ <div class="c2"><span class="mono" data-cap="P1">5</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="P1c" aria-label="crediti live P1"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="P1"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="P1"></span><span class="f" data-fb="P1" hidden></span></span><button type="button" class="info" data-open="P1" aria-label="Apri profilo P1">›</button></div>
+</div><div class="row" data-slot="P2">
+ <div class="c1"><span class="badge outline">P2</span></div>
+ <div class="c2"><span class="mono" data-cap="P2">3</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="P2c" aria-label="crediti live P2"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="P2"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="P2"></span><span class="f" data-fb="P2" hidden></span></span><button type="button" class="info" data-open="P2" aria-label="Apri profilo P2">›</button></div>
+</div><div class="row" data-slot="P3">
+ <div class="c1"><span class="badge outline">P3</span></div>
+ <div class="c2"><span class="mono" data-cap="P3">1</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="P3c" aria-label="crediti live P3"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="P3"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="P3"></span><span class="f" data-fb="P3" hidden></span></span><button type="button" class="info" data-open="P3" aria-label="Apri profilo P3">›</button></div>
+</div></div>
+</section><section class="card dept" id="D" style="--c:#10b981">
+ <div class="card-h">
+  <div><div class="card-title"><span class="dot"></span>Difesa<span class="badge secondary" data-cnt="D">0/8</span></div><p class="card-desc" data-note="D"></p></div>
+  <div class="mini"><div class="mini-k">Live / tetto</div><div class="mini-v"><span class="lv" data-lv="D">0</span><span class="sep">/</span><span data-lv-cap="D"></span></div><div class="tick" data-tick="D"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+ </div>
+ <div class="table"><div class="thead"><span>Slot</span><span>Tetto</span><span>Live</span><span>Delta</span><span class="hw">Profilo del giocatore · › per il dettaglio</span></div><div class="row" data-slot="D1">
+ <div class="c1"><span class="badge outline">D1</span></div>
+ <div class="c2"><span class="mono" data-cap="D1">65</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="D1c" aria-label="crediti live D1"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="D1"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="D1"></span><span class="f" data-fb="D1" hidden></span></span><button type="button" class="info" data-open="D1" aria-label="Apri profilo D1">›</button></div>
+</div><div class="row" data-slot="D2">
+ <div class="c1"><span class="badge outline">D2</span></div>
+ <div class="c2"><span class="mono" data-cap="D2">32</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="D2c" aria-label="crediti live D2"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="D2"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="D2"></span><span class="f" data-fb="D2" hidden></span></span><button type="button" class="info" data-open="D2" aria-label="Apri profilo D2">›</button></div>
+</div><div class="row" data-slot="D3">
+ <div class="c1"><span class="badge outline">D3</span></div>
+ <div class="c2"><span class="mono" data-cap="D3">26</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="D3c" aria-label="crediti live D3"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="D3"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="D3"></span><span class="f" data-fb="D3" hidden></span></span><button type="button" class="info" data-open="D3" aria-label="Apri profilo D3">›</button></div>
+</div><div class="row" data-slot="D4">
+ <div class="c1"><span class="badge outline">D4</span></div>
+ <div class="c2"><span class="mono" data-cap="D4">22</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="D4c" aria-label="crediti live D4"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="D4"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="D4"></span><span class="f" data-fb="D4" hidden></span></span><button type="button" class="info" data-open="D4" aria-label="Apri profilo D4">›</button></div>
+</div><div class="row" data-slot="D5">
+ <div class="c1"><span class="badge outline">D5</span></div>
+ <div class="c2"><span class="mono" data-cap="D5">2</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="D5c" aria-label="crediti live D5"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="D5"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="D5"></span><span class="f" data-fb="D5" hidden></span></span><button type="button" class="info" data-open="D5" aria-label="Apri profilo D5">›</button></div>
+</div><div class="row" data-slot="D6">
+ <div class="c1"><span class="badge outline">D6</span></div>
+ <div class="c2"><span class="mono" data-cap="D6">2</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="D6c" aria-label="crediti live D6"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="D6"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="D6"></span><span class="f" data-fb="D6" hidden></span></span><button type="button" class="info" data-open="D6" aria-label="Apri profilo D6">›</button></div>
+</div><div class="row" data-slot="D7">
+ <div class="c1"><span class="badge outline">D7</span></div>
+ <div class="c2"><span class="mono" data-cap="D7">1</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="D7c" aria-label="crediti live D7"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="D7"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="D7"></span><span class="f" data-fb="D7" hidden></span></span><button type="button" class="info" data-open="D7" aria-label="Apri profilo D7">›</button></div>
+</div><div class="row" data-slot="D8">
+ <div class="c1"><span class="badge outline">D8</span></div>
+ <div class="c2"><span class="mono" data-cap="D8">1</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="D8c" aria-label="crediti live D8"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="D8"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="D8"></span><span class="f" data-fb="D8" hidden></span></span><button type="button" class="info" data-open="D8" aria-label="Apri profilo D8">›</button></div>
+</div></div>
+</section><section class="card dept" id="C" style="--c:#3b82f6">
+ <div class="card-h">
+  <div><div class="card-title"><span class="dot"></span>Centrocampo<span class="badge secondary" data-cnt="C">0/8</span></div><p class="card-desc" data-note="C"></p></div>
+  <div class="mini"><div class="mini-k">Live / tetto</div><div class="mini-v"><span class="lv" data-lv="C">0</span><span class="sep">/</span><span data-lv-cap="C"></span></div><div class="tick" data-tick="C"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+ </div>
+ <div class="table"><div class="thead"><span>Slot</span><span>Tetto</span><span>Live</span><span>Delta</span><span class="hw">Profilo del giocatore · › per il dettaglio</span></div><div class="row" data-slot="C1">
+ <div class="c1"><span class="badge outline">C1</span></div>
+ <div class="c2"><span class="mono" data-cap="C1">30</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="C1c" aria-label="crediti live C1"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="C1"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="C1"></span><span class="f" data-fb="C1" hidden></span></span><button type="button" class="info" data-open="C1" aria-label="Apri profilo C1">›</button></div>
+</div><div class="row" data-slot="C2">
+ <div class="c1"><span class="badge outline">C2</span></div>
+ <div class="c2"><span class="mono" data-cap="C2">24</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="C2c" aria-label="crediti live C2"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="C2"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="C2"></span><span class="f" data-fb="C2" hidden></span></span><button type="button" class="info" data-open="C2" aria-label="Apri profilo C2">›</button></div>
+</div><div class="row" data-slot="C3">
+ <div class="c1"><span class="badge outline">C3</span></div>
+ <div class="c2"><span class="mono" data-cap="C3">16</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="C3c" aria-label="crediti live C3"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="C3"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="C3"></span><span class="f" data-fb="C3" hidden></span></span><button type="button" class="info" data-open="C3" aria-label="Apri profilo C3">›</button></div>
+</div><div class="row" data-slot="C4">
+ <div class="c1"><span class="badge outline">C4</span></div>
+ <div class="c2"><span class="mono" data-cap="C4">7</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="C4c" aria-label="crediti live C4"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="C4"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="C4"></span><span class="f" data-fb="C4" hidden></span></span><button type="button" class="info" data-open="C4" aria-label="Apri profilo C4">›</button></div>
+</div><div class="row" data-slot="C5">
+ <div class="c1"><span class="badge outline">C5</span></div>
+ <div class="c2"><span class="mono" data-cap="C5">1</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="C5c" aria-label="crediti live C5"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="C5"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="C5"></span><span class="f" data-fb="C5" hidden></span></span><button type="button" class="info" data-open="C5" aria-label="Apri profilo C5">›</button></div>
+</div><div class="row" data-slot="C6">
+ <div class="c1"><span class="badge outline">C6</span></div>
+ <div class="c2"><span class="mono" data-cap="C6">1</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="C6c" aria-label="crediti live C6"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="C6"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="C6"></span><span class="f" data-fb="C6" hidden></span></span><button type="button" class="info" data-open="C6" aria-label="Apri profilo C6">›</button></div>
+</div><div class="row" data-slot="C7">
+ <div class="c1"><span class="badge outline">C7</span></div>
+ <div class="c2"><span class="mono" data-cap="C7">1</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="C7c" aria-label="crediti live C7"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="C7"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="C7"></span><span class="f" data-fb="C7" hidden></span></span><button type="button" class="info" data-open="C7" aria-label="Apri profilo C7">›</button></div>
+</div><div class="row" data-slot="C8">
+ <div class="c1"><span class="badge outline">C8</span></div>
+ <div class="c2"><span class="mono" data-cap="C8">1</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="C8c" aria-label="crediti live C8"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="C8"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="C8"></span><span class="f" data-fb="C8" hidden></span></span><button type="button" class="info" data-open="C8" aria-label="Apri profilo C8">›</button></div>
+</div></div>
+</section><section class="card dept" id="A" style="--c:#f43f5e">
+ <div class="card-h">
+  <div><div class="card-title"><span class="dot"></span>Attacco<span class="badge secondary" data-cnt="A">0/6</span></div><p class="card-desc" data-note="A"></p></div>
+  <div class="mini"><div class="mini-k">Live / tetto</div><div class="mini-v"><span class="lv" data-lv="A">0</span><span class="sep">/</span><span data-lv-cap="A"></span></div><div class="tick" data-tick="A"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+ </div>
+ <div class="table"><div class="thead"><span>Slot</span><span>Tetto</span><span>Live</span><span>Delta</span><span class="hw">Profilo del giocatore · › per il dettaglio</span></div><div class="row" data-slot="A1">
+ <div class="c1"><span class="badge outline">A1</span></div>
+ <div class="c2"><span class="mono" data-cap="A1">200</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="A1c" aria-label="crediti live A1"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="A1"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="A1"></span><span class="f" data-fb="A1" hidden></span></span><button type="button" class="info" data-open="A1" aria-label="Apri profilo A1">›</button></div>
+</div><div class="row" data-slot="A2">
+ <div class="c1"><span class="badge outline">A2</span></div>
+ <div class="c2"><span class="mono" data-cap="A2">33</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="A2c" aria-label="crediti live A2"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="A2"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="A2"></span><span class="f" data-fb="A2" hidden></span></span><button type="button" class="info" data-open="A2" aria-label="Apri profilo A2">›</button></div>
+</div><div class="row" data-slot="A3">
+ <div class="c1"><span class="badge outline">A3</span></div>
+ <div class="c2"><span class="mono" data-cap="A3">22</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="A3c" aria-label="crediti live A3"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="A3"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="A3"></span><span class="f" data-fb="A3" hidden></span></span><button type="button" class="info" data-open="A3" aria-label="Apri profilo A3">›</button></div>
+</div><div class="row" data-slot="A4">
+ <div class="c1"><span class="badge outline">A4</span></div>
+ <div class="c2"><span class="mono" data-cap="A4">2</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="A4c" aria-label="crediti live A4"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="A4"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="A4"></span><span class="f" data-fb="A4" hidden></span></span><button type="button" class="info" data-open="A4" aria-label="Apri profilo A4">›</button></div>
+</div><div class="row" data-slot="A5">
+ <div class="c1"><span class="badge outline">A5</span></div>
+ <div class="c2"><span class="mono" data-cap="A5">1</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="A5c" aria-label="crediti live A5"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="A5"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="A5"></span><span class="f" data-fb="A5" hidden></span></span><button type="button" class="info" data-open="A5" aria-label="Apri profilo A5">›</button></div>
+</div><div class="row" data-slot="A6">
+ <div class="c1"><span class="badge outline">A6</span></div>
+ <div class="c2"><span class="mono" data-cap="A6">1</span></div>
+ <div class="c3"><div class="input"><input type="number" inputmode="numeric" min="0" placeholder="0" data-k="A6c" aria-label="crediti live A6"><span class="suffix">cr</span></div></div>
+ <div class="c4"><span class="delta" data-d="A6"></span></div>
+ <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="A6"></span><span class="f" data-fb="A6" hidden></span></span><button type="button" class="info" data-open="A6" aria-label="Apri profilo A6">›</button></div>
+</div></div>
+</section>
+<div id="regole"></div>
+<section class="card reg" data-reg="A"><div class="card-h"><div><div class="card-title">Regole al tavolo<span class="badge secondary">strategia A</span></div><p class="card-desc">Ordine di chiamata, vincoli e cosa fare se un pezzo salta.</p></div></div>
+<div class="prose"><h3>Ordine di chiamata</h3><ol><li><b>A1</b> per primo, tetto 205. Si decide qui se questa è la strategia.</li><li><b>D1</b>, tetto 65. Se supera, lascia e passa alla Strategia B.</li><li>I tre difensori D2–D4 uno dietro l’altro, prima che il mercato si accorga dei 6,5–6,7 a 30.</li><li>A2 appena passa sotto 33.</li><li>Tutto il centrocampo e le riserve a fine asta, quando i budget altrui sono vuoti.</li></ol><h3>Vincoli</h3><ul><li>Il numero accanto allo slot è il <b>tetto</b>, non un obiettivo: sopra di 1 si lascia. I tetti sommano già 500, quindi ogni credito pagato in più è un credito tolto a fine asta al centrocampo.</li><li>Comprare sotto il tetto è il vero guadagno: ciò che avanza si accumula e va su C1 o su un rilancio a A1/D1 — mai su A2, mai su un tetto già saltato.</li><li>Dopo A1, <b>nessuno tra 40 e 60</b>: in quella fascia il listone paga il doppio per punto.</li><li>Mai due giocatori della stessa squadra tra i titolari di un reparto.</li><li>Il quarto difensore va comunque a 20–26: tra 20 e 26 c’è il gradino da 6,4 a 6,5 a 3 crediti per 0,1. È l’unico slot dove risparmiare costa più di quanto rende.</li><li>Il modificatore in questa lega è a scala 0,5: tra un blocco da 6,3 e uno da 6,1 passano 0,2 punti a giornata, cioè 20 crediti in tutto. Non pagare la media voto, paga i voti.</li><li>Le riserve a 1–2 sono titolari veri con 3 presenze su 3. Il listone dice titolarità 5 anche a chi è infortunato fino a gennaio: prima di chiamare un 1-credito, controlla che abbia giocato la settimana scorsa.</li><li>Se un tetto salta lo stesso, il credito esce dallo slot successivo dello stesso reparto: D2 sopra di 4 → D3 sotto di 4.</li></ul><h3>Se salta un pezzo</h3><div class="callouts"><div class="callout"><h4>A1 sopra 205</h4><p>Lascia. Piano di riserva: il secondo 8,0 del listone fino a 180, oppure un 7,5 fino a 95 e i 105 avanzati su C1 (un 7,1 a 57) e A2 (un 7,2 a 45).</p></div><div class="callout"><h4>D1 sopra 65</h4><p>Lascia e usa la Strategia B: quattro da 6,5–6,7 con tetti 38/32/27/23, i 25 in più su C1 (un 7,1–7,2, tetto 55).</p></div><div class="callout"><h4>I 6,6–6,7 sotto 30 già andati</h4><p>Scendi ai 6,4–6,5 a 20–26 di squadre con difesa forte. Non salire su nessuno sopra 30.</p></div><div class="callout"><h4>Hai sforato tre tetti di 5</h4><p>I quindici escono da A2 (un 6,9 a 22 al posto del 7,1 a 33) e da C2 (16 al posto di 24).</p></div></div></div></section><section class="card reg" data-reg="B"><div class="card-h"><div><div class="card-title">Regole al tavolo<span class="badge secondary">strategia B</span></div><p class="card-desc">Ordine di chiamata, vincoli e cosa fare se un pezzo salta.</p></div></div>
+<div class="prose"><h3>Ordine di chiamata</h3><ol><li><b>A1</b> per primo, tetto 205.</li><li><b>D1</b> e <b>D2</b> subito dopo, entrambi sotto 38.</li><li>D3 e D4, poi C1 prima che i budget altrui lo portino a 60.</li><li>A2 appena passa sotto 33.</li><li>Il resto del centrocampo e le riserve a fine asta.</li></ol><h3>Vincoli</h3><ul><li>Il numero accanto allo slot è il <b>tetto</b>, non un obiettivo: sopra di 1 si lascia. I tetti sommano già 500, quindi ogni credito pagato in più è un credito tolto a fine asta al centrocampo.</li><li>Comprare sotto il tetto è il vero guadagno: ciò che avanza si accumula e va su C1 o su un rilancio a A1/D1 — mai su A2, mai su un tetto già saltato.</li><li>Dopo A1, <b>nessuno tra 40 e 60</b>: in quella fascia il listone paga il doppio per punto.</li><li>Mai due giocatori della stessa squadra tra i titolari di un reparto.</li><li>Il quarto difensore va comunque a 20–26: tra 20 e 26 c’è il gradino da 6,4 a 6,5 a 3 crediti per 0,1. È l’unico slot dove risparmiare costa più di quanto rende.</li><li>Il modificatore in questa lega è a scala 0,5: tra un blocco da 6,3 e uno da 6,1 passano 0,2 punti a giornata, cioè 20 crediti in tutto. Non pagare la media voto, paga i voti.</li><li>Le riserve a 1–2 sono titolari veri con 3 presenze su 3. Il listone dice titolarità 5 anche a chi è infortunato fino a gennaio: prima di chiamare un 1-credito, controlla che abbia giocato la settimana scorsa.</li><li>Se un tetto salta lo stesso, il credito esce dallo slot successivo dello stesso reparto: D2 sopra di 4 → D3 sotto di 4.</li></ul><h3>Se salta un pezzo</h3><div class="callouts"><div class="callout"><h4>A1 sopra 205</h4><p>Lascia. Piano di riserva: il secondo 8,0 fino a 180, oppure un 7,5 fino a 95 e i 105 avanzati su C1 e A2.</p></div><div class="callout"><h4>D1 sopra 38</h4><p>Lascia: D1 diventa il secondo 6,6 con tetto 32, e D2 scende a un 6,5 a 27.</p></div><div class="callout"><h4>C1 sopra 55</h4><p>C1 scende a un 7,0 a 30 e i 25 avanzati vanno su A2 (un 7,2 a 45) e D1 (+5).</p></div><div class="callout"><h4>Hai sforato tre tetti di 5</h4><p>I quindici escono da A2 (un 6,9 a 22 al posto del 7,1 a 33) e da C2 (16 al posto di 24).</p></div></div></div></section>
+<div class="modal" id="modal" hidden><div class="modal-bg" data-close></div><div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="m-title"><div class="modal-h"><span class="badge outline" id="m-slot"></span><span class="m-cap">tetto <b id="m-cap"></b></span><button type="button" class="m-x" data-close aria-label="Chiudi">×</button></div><p class="m-t" id="m-title"></p><p class="m-f" id="m-f"></p></div></div>
+<p class="foot">Offerta massima = residuo − slot ancora vuoti · la colonna live è condivisa tra A e B e resta nel link della pagina.</p>
+</div>
+<script>
+(function(){
+const DATA={"A": {"title": "Il 7,3 in difesa + l’8,5 in attacco", "budget": {"P": 9, "D": 151, "C": 81, "A": 259}, "note": {"P": "Tre titolari di tre squadre medio-basse con calendari complementari: ogni giornata uno dei tre ha l’avversario facile. Vale mezzo punto a giornata, gratis.", "D": "Quattro titolari da 6,5+: qui un credito compra più FMV che in ogni altro reparto. D1 è il giocatore con il miglior rapporto del listone: 0,67 in più del secondo difensore per 23 crediti in più.", "C": "I 6,9–7,0 costano 15–32. Tra 35 e 55 il listone è vuoto: o compri a 30 o non compri. Si compra a fine asta, quando i budget altrui sono vuoti.", "A": "Un solo grande. Dopo A1 nessun attaccante sopra 38: tra 45 e 90 c’è solo fascia media pagata come fascia alta. Uno per squadra nel reparto."}, "slots": {"P1": {"cap": 5, "desc": "Titolare fisso di una squadra tra la 6ª e la 15ª", "fb": "Non serve la media voto: serve che giochi 38 partite"}, "P2": {"cap": 3, "desc": "Titolare fisso di una seconda squadra, calendario opposto a P1", "fb": "Quando P1 ha la big, lui ha la neopromossa"}, "P3": {"cap": 1, "desc": "Terzo titolare, terza squadra", "fb": "Copre le giornate in cui P1 e P2 hanno entrambi la big"}, "D1": {"cap": 65, "desc": "Il 7,3 del listone: esterno di big con gol e assist", "fb": "Vale 100, il tetto è 65 per far quadrare i conti. Sopra 65 passa alla Strategia B"}, "D2": {"cap": 32, "desc": "Centrale titolare fisso di una big, 6,6–6,7, qualche gol", "fb": "Sopra 32 il costo per punto raddoppia: lascia"}, "D3": {"cap": 26, "desc": "Centrale titolare di una squadra da Europa, 6,5, difesa forte", "fb": "Il miglior affare del listone dopo D1"}, "D4": {"cap": 22, "desc": "Titolare fisso da 6,4–6,5, anche di provincia se la difesa regge", "fb": "Mai sotto 19"}, "D5": {"cap": 2, "desc": "Centrale titolare fisso di una squadra medio-bassa, media voto 6,0", "fb": "Copre le squalifiche di D2–D4"}, "D6": {"cap": 2, "desc": "Terzino titolare fisso, 3 presenze su 3", "fb": "Per il voto, non per i bonus"}, "D7": {"cap": 1, "desc": "Titolare al 65% di una squadra medio-bassa", "fb": ""}, "D8": {"cap": 1, "desc": "Chi ha la media voto più alta tra i titolari a 1 credito", "fb": "Verifica che abbia giocato"}, "C1": {"cap": 30, "desc": "Titolare fisso da 6,9–7,0 con bonus: inserimenti o piede da punizione", "fb": "Il migliore che passa sotto 34, non il più famoso"}, "C2": {"cap": 24, "desc": "Titolare da 6,8–6,9 in una squadra che segna", "fb": "Meglio un trequartista di provincia che una riserva di big"}, "C3": {"cap": 16, "desc": "Titolare da 6,7–6,8, anche in ballottaggio al 65%", "fb": "Qui vale la scommessa su chi è arrivato a settembre"}, "C4": {"cap": 7, "desc": "Titolare da 6,5–6,7 con un motivo per i bonus: rigorista, punizioni, inserimenti", "fb": "Fino a 10 solo se batte i rigori"}, "C5": {"cap": 1, "desc": "Titolare fisso di una big, voto 6,3 senza buchi", "fb": ""}, "C6": {"cap": 1, "desc": "Regista titolare di provincia, media voto 6,1+", "fb": ""}, "C7": {"cap": 1, "desc": "Titolare fisso di una squadra da salvezza", "fb": ""}, "C8": {"cap": 1, "desc": "Esterno a tutta fascia listato C, o capitano di provincia", "fb": ""}, "A1": {"cap": 200, "desc": "L’unico 8,5 del listone. Rigorista, 20+ gol, squadra da Champions", "fb": "Tetto fisso 200: 205 solo se A2 poi va a 28. Sopra: vedi “Se salta un pezzo”"}, "A2": {"cap": 33, "desc": "Titolare fisso da 7,0–7,1, 8–12 gol, senza infortuni pesanti alle spalle", "fb": "In ordine: Berardi ≤38 · Laurientè ≤30 · De Ketelaere ≤34 · Diao ≤30"}, "A3": {"cap": 22, "desc": "Titolare fisso da 6,8–6,9 di una squadra medio-bassa", "fb": "In ordine: Laurientè · Colombo ≤22 · Dovbyk ≤22 o Piccoli ≤12 · Soulè ≤22. Non Castro (stessa squadra di A1)"}, "A4": {"cap": 2, "desc": "Titolare da 6,6 di una squadra da salvezza che ha già segnato", "fb": "Kvernadze ≤8 · Yeboah ≤6 · Adams A. ≤9 (uno dei due del Venezia)"}, "A5": {"cap": 1, "desc": "Trequartista listato A o punta titolare di provincia", "fb": "Lontani 1 · Tourè E. ≤3 (uno dei due del Parma) · Bowie ≤3"}, "A6": {"cap": 1, "desc": "Punta di riserva che entra sempre, o capitano di provincia", "fb": "Zapata D. · Ghedjemis (non con Kvernadze) · Cutrone"}}}, "B": {"title": "L’8,5 in attacco, difesa a quattro pari", "budget": {"P": 9, "D": 126, "C": 106, "A": 259}, "note": {"P": "Tre titolari di tre squadre medio-basse con calendari complementari: ogni giornata uno dei tre ha l’avversario facile. Vale mezzo punto a giornata, gratis.", "D": "Senza il 7,3 la difesa è quattro 6,5–6,7 a 20–38. Perdi 0,67 di FMV rispetto alla A e li recuperi solo in parte con C1: è per questo che la A è la prima scelta.", "C": "Senza il 7,3 i 22 risparmiati vanno tutti su C1: un 7,1–7,2 vero. Il resto del reparto resta a saldo.", "A": "Un solo grande. Dopo A1 nessun attaccante sopra 38: tra 45 e 90 c’è solo fascia media pagata come fascia alta. Uno per squadra nel reparto."}, "slots": {"P1": {"cap": 5, "desc": "Titolare fisso di una squadra tra la 6ª e la 15ª", "fb": "Non serve la media voto: serve che giochi 38 partite"}, "P2": {"cap": 3, "desc": "Titolare fisso di una seconda squadra, calendario opposto a P1", "fb": "Quando P1 ha la big, lui ha la neopromossa"}, "P3": {"cap": 1, "desc": "Terzo titolare, terza squadra", "fb": "Copre le giornate in cui P1 e P2 hanno entrambi la big"}, "D1": {"cap": 38, "desc": "Il miglior centrale di big disponibile, 6,6–6,7, con gol", "fb": "Chi passa per primo. Sopra 38 lascia"}, "D2": {"cap": 32, "desc": "Secondo centrale o esterno di big, 6,5–6,7", "fb": "Un 6,5 a 24–28 se sale sopra 34"}, "D3": {"cap": 27, "desc": "Centrale titolare di una squadra da Europa, difesa forte", "fb": "Il miglior affare del listone"}, "D4": {"cap": 23, "desc": "Titolare fisso da 6,4–6,5", "fb": "Mai sotto 20"}, "D5": {"cap": 2, "desc": "Centrale titolare fisso di una squadra medio-bassa, media voto 6,0", "fb": ""}, "D6": {"cap": 2, "desc": "Terzino titolare fisso, 3 presenze su 3", "fb": ""}, "D7": {"cap": 1, "desc": "Titolare al 65% di una squadra medio-bassa", "fb": ""}, "D8": {"cap": 1, "desc": "Chi ha la media voto più alta tra i titolari a 1 credito", "fb": ""}, "C1": {"cap": 55, "desc": "Titolare da 7,1–7,2 di una squadra da Europa: mezzala con gol o rigorista", "fb": "Se ne passa uno da 7,0 sotto 34, prendilo e sposta 20 su C2"}, "C2": {"cap": 25, "desc": "Titolare da 6,8–6,9 in una squadra che segna", "fb": ""}, "C3": {"cap": 16, "desc": "Titolare da 6,7–6,8, anche in ballottaggio al 65%", "fb": ""}, "C4": {"cap": 6, "desc": "Titolare da 6,5–6,7 con un motivo per i bonus", "fb": "Fino a 10 solo se batte i rigori"}, "C5": {"cap": 1, "desc": "Titolare fisso di una big, voto 6,3 senza buchi", "fb": ""}, "C6": {"cap": 1, "desc": "Regista titolare di provincia, media voto 6,1+", "fb": ""}, "C7": {"cap": 1, "desc": "Titolare fisso di una squadra da salvezza", "fb": ""}, "C8": {"cap": 1, "desc": "Esterno a tutta fascia listato C, o capitano di provincia", "fb": ""}, "A1": {"cap": 200, "desc": "L’unico 8,5 del listone. Rigorista, 20+ gol, squadra da Champions", "fb": "Tetto fisso 200: 205 solo se A2 poi va a 28. Sopra: vedi “Se salta un pezzo”"}, "A2": {"cap": 33, "desc": "Titolare fisso da 7,0–7,1, 8–12 gol, senza infortuni pesanti alle spalle", "fb": "In ordine: Berardi ≤38 · Laurientè ≤30 · De Ketelaere ≤34 · Diao ≤30"}, "A3": {"cap": 22, "desc": "Titolare fisso da 6,8–6,9 di una squadra medio-bassa", "fb": "In ordine: Laurientè · Colombo ≤22 · Dovbyk ≤22 o Piccoli ≤12 · Soulè ≤22. Non Castro (stessa squadra di A1)"}, "A4": {"cap": 2, "desc": "Titolare da 6,6 di una squadra da salvezza che ha già segnato", "fb": "Kvernadze ≤8 · Yeboah ≤6 · Adams A. ≤9 (uno dei due del Venezia)"}, "A5": {"cap": 1, "desc": "Trequartista listato A o punta titolare di provincia", "fb": "Lontani 1 · Tourè E. ≤3 (uno dei due del Parma) · Bowie ≤3"}, "A6": {"cap": 1, "desc": "Punta di riserva che entra sempre, o capitano di provincia", "fb": "Zapata D. · Ghedjemis (non con Kvernadze) · Cutrone"}}}}, ROLES={"P1": "P", "P2": "P", "P3": "P", "D1": "D", "D2": "D", "D3": "D", "D4": "D", "D5": "D", "D6": "D", "D7": "D", "D8": "D", "C1": "C", "C2": "C", "C3": "C", "C4": "C", "C5": "C", "C6": "C", "C7": "C", "C8": "C", "A1": "A", "A2": "A", "A3": "A", "A4": "A", "A5": "A", "A6": "A"}, TONE={"P": "#f59e0b", "D": "#10b981", "C": "#3b82f6", "A": "#f43f5e"};
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const inputs=$$('input[data-k]'); const st={}; let cur='A';
+function load(){try{const h=location.hash.slice(1);if(h){const o=JSON.parse(decodeURIComponent(h));if(o._s)cur=o._s;delete o._s;Object.assign(st,o);}}catch(e){} inputs.forEach(i=>{if(st[i.dataset.k]!=null)i.value=st[i.dataset.k];});}
+function save(){try{const o={_s:cur};for(const k in st)if(st[k]!==''&&st[k]!=null)o[k]=st[k];history.replaceState(null,'','#'+encodeURIComponent(JSON.stringify(o)));}catch(e){}}
+function delta(el,v,label){if(v===0){el.textContent=label||'al tetto';el.className='delta zero';return;}el.textContent=(v>0?'+':'−')+Math.abs(v)+(label?' '+label:'');el.className='delta '+(v>0?'neg':'pos');}
+function ticksFor(el,val,max){const is=[...el.children];const n=is.length;const lit=max>0?Math.round(Math.min(val,max)/max*n):0;is.forEach((i,k)=>{i.className=k<lit?(val>max?'over':'on'):'';});}
+function applyStrat(){const D=DATA[cur];
+ $$('.tabs button').forEach(b=>{b.classList.toggle('on',b.dataset.st===cur);b.setAttribute('aria-selected',b.dataset.st===cur);});
+ $$('.reg[data-reg]').forEach(r=>r.classList.toggle('on',r.dataset.reg===cur));
+ for(const r of ['P','D','C','A']){$('[data-note="'+r+'"]').textContent=D.note[r]||'';$('[data-lv-cap="'+r+'"]').textContent=D.budget[r];}
+ for(const s in D.slots){$('[data-cap="'+s+'"]').textContent=D.slots[s].cap;$('[data-desc="'+s+'"]').textContent=D.slots[s].desc;$('[data-fb="'+s+'"]').textContent=D.slots[s].fb||'';}
+ $('#dbar').innerHTML=['P','D','C','A'].map(r=>'<i style="flex:'+D.budget[r]+';background:'+TONE[r]+'" title="'+r+' '+D.budget[r]+'"></i>').join('');
+ calc();save();}
+function calc(){const D=DATA[cur];const live={P:0,D:0,C:0,A:0},cnt={P:0,D:0,C:0,A:0};let filled=0,total=0;
+ for(const slot in D.slots){const cap=D.slots[slot].cap;const v=parseInt(st[slot+'c']);const row=$('[data-slot="'+slot+'"]');const d=row.querySelector('.delta');row.classList.remove('over','done');
+  if(!isNaN(v)&&v>0){filled++;total+=v;live[ROLES[slot]]+=v;cnt[ROLES[slot]]++;const diff=v-cap;row.classList.add(diff>0?'over':'done');delta(d,diff);}
+  else{d.textContent='';d.className='delta';}}
+ const res=500-total,om=res-(25-filled);
+ $('#res').textContent=res;$('#omax').textContent=Math.max(om,0);$('#slots').textContent=filled;
+ let capT=0;for(const r of ['P','D','C','A']){capT+=D.budget[r];$('[data-s="'+r+'"]').textContent=D.budget[r];$('[data-l="'+r+'"]').textContent=live[r];$('[data-lv="'+r+'"]').textContent=live[r];
+  const n=Object.keys(D.slots).filter(s=>ROLES[s]===r).length;$('[data-cnt="'+r+'"]').textContent=cnt[r]+'/'+n;delta($('[data-x="'+r+'"]'),live[r]-D.budget[r]);
+  const t1=$('[data-tick="'+r+'"]'),t2=$('[data-tick2="'+r+'"]');[t1,t2].forEach(t=>{t.style.setProperty('--c',TONE[r]);ticksFor(t,live[r],D.budget[r]);});}
+ $('[data-s="T"]').textContent=capT;$('[data-l="T"]').textContent=total;delta($('[data-x="T"]'),total-capT,'sul totale');}
+inputs.forEach(i=>i.addEventListener('input',()=>{st[i.dataset.k]=i.value;save();calc();}));
+$$('.tabs button').forEach(b=>b.addEventListener('click',()=>{cur=b.dataset.st;applyStrat();}));
+$('#reset').addEventListener('click',()=>{if(!confirm('Azzero tutta la colonna live?'))return;for(const k in st)delete st[k];inputs.forEach(i=>i.value='');save();calc();});
+const navs=$$('nav a');const targets=['P','D','C','A'].map(r=>$('#'+r));
+if('IntersectionObserver' in window){const vis=new Set();const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)vis.add(e.target.id);else vis.delete(e.target.id);});const first=['P','D','C','A'].find(r=>vis.has(r));navs.forEach(a=>a.classList.toggle('on',a.dataset.nav===first));},{rootMargin:'-126px 0px -55% 0px'});targets.forEach(t=>io.observe(t));}
+
+const modal=$('#modal');
+function openM(slot){const D=DATA[cur];const d=D.slots[slot];$('#m-slot').textContent=slot;$('#m-cap').textContent=d.cap;$('#m-title').textContent=d.desc;$('#m-f').textContent=d.fb||'';modal.hidden=false;document.body.style.overflow='hidden';$('.m-x').focus();}
+function closeM(){modal.hidden=true;document.body.style.overflow='';}
+$$('[data-open]').forEach(el=>{el.addEventListener('click',()=>openM(el.dataset.open));el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openM(el.dataset.open);}});});
+$$('[data-close]').forEach(el=>el.addEventListener('click',closeM));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal.hidden)closeM();});
+load();applyStrat();
+})();
+</script></body></html>
