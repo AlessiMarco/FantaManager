@@ -1,0 +1,136 @@
+{
+  "data": "2026-09-09T21:28:53.109Z",
+  "stato": {
+    "budget": 500,
+    "ruoli": [
+      {
+        "nome": "POR",
+        "ini": "P",
+        "hex": "#e0a54a",
+        "slot": [
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          }
+        ]
+      },
+      {
+        "nome": "DIF",
+        "ini": "D",
+        "hex": "#5cba85",
+        "slot": [
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          }
+        ]
+      },
+      {
+        "nome": "CEN",
+        "ini": "C",
+        "hex": "#6b9ee0",
+        "slot": [
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          }
+        ]
+      },
+      {
+        "nome": "ATT",
+        "ini": "A",
+        "hex": "#e0655c",
+        "slot": [
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          },
+          {
+            "p": null,
+            "l": null
+          }
+        ]
+      }
+    ]
+  }
+}
