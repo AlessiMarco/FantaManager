@@ -8,7 +8,7 @@
  --radius:.75rem;--shadow:0 1px 2px 0 rgb(0 0 0 / .08),0 0 0 1px rgb(0 0 0 / .02);--shadow-md:0 1px 3px 0 rgb(0 0 0 / .06),0 4px 12px -4px rgb(0 0 0 / .08);
  --font:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
 }
-*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:126px;-webkit-text-size-adjust:100%}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:150px;-webkit-text-size-adjust:100%}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
 body{margin:0;background:var(--background);color:var(--foreground);font:14px/1.5 var(--font);touch-action:manipulation;-webkit-font-smoothing:antialiased;font-feature-settings:"cv11","ss01";font-variant-numeric:tabular-nums}
 button,input{font:inherit;color:inherit}
@@ -33,7 +33,7 @@ h1,h2,h3,h4{margin:0;font-weight:600;letter-spacing:-.01em}
 .delta::before{font-size:9px}.delta.pos::before{content:"▼"}.delta.neg::before{content:"▲"}.delta.zero::before{content:"•"}.delta.zero{color:var(--muted-fg);background:var(--muted);border-color:var(--border)}
 
 /* period tabs (strategy switch) */
-.tabs{display:inline-grid;grid-template-columns:1fr 1fr;background:#e9e9ee;border-radius:8px;padding:3px;margin-top:20px;width:100%}
+.tabs{display:inline-grid;grid-template-columns:1fr 1fr;background:#e9e9ee;border-radius:8px;padding:3px;width:100%}
 .tabs button{border:0;background:transparent;border-radius:6px;padding:7px 12px;font-size:13px;font-weight:500;color:var(--muted-fg);cursor:pointer;text-align:left;transition:background .15s,color .15s,box-shadow .15s}
 .tabs button small{display:block;font-size:11.5px;font-weight:400;color:var(--muted-fg)}
 .tabs button.on{background:var(--card);color:var(--foreground);box-shadow:0 1px 3px rgb(0 0 0 / .12),0 0 0 1px rgb(0 0 0 / .06)}.tabs button.on small{color:var(--muted-fg)}
@@ -41,7 +41,11 @@ h1,h2,h3,h4{margin:0;font-weight:600;letter-spacing:-.01em}
 
 /* KPI row */
 .top{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.94);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);margin:14px -20px 0;padding:10px 20px;border-bottom:1px solid var(--border)}
-.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpi .nd{font-size:11px;font-weight:600;margin-top:2px;line-height:1.2}.kpi .nd.pos{color:var(--pos)}.kpi .nd.neg{color:var(--neg)}.kpi .nd.zero{color:var(--muted-fg)}
+.kpi.tot .v b{color:var(--accent)}
+.tabrow{display:flex;gap:8px;align-items:stretch;margin-top:20px}.tabrow .tabs{margin-top:0;flex:1}
+.btn.sm{padding:0 12px;font-size:12.5px;align-self:stretch}
 .kpi{padding:10px 14px 11px}
 .kpi .k{font-size:12px;font-weight:500;color:var(--muted-fg);letter-spacing:0}
 .kpi .v{display:flex;align-items:baseline;gap:6px;margin-top:2px}
@@ -49,8 +53,12 @@ h1,h2,h3,h4{margin:0;font-weight:600;letter-spacing:-.01em}
 .kpi .v span{font-size:12px;color:var(--muted-fg)}
 .kpi.hi .v b{color:var(--accent)}
 nav{display:flex;gap:4px;margin-top:10px;background:#e9e9ee;border-radius:8px;padding:3px}
-nav a{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;color:var(--muted-fg);font-size:12.5px;font-weight:500;padding:6px 0;border-radius:6px;transition:background .15s,color .15s}
-nav a.on{background:var(--card);color:var(--foreground);box-shadow:0 1px 3px rgb(0 0 0 / .12),0 0 0 1px rgb(0 0 0 / .06)}
+nav a,nav .tot{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;text-decoration:none;color:var(--muted-fg);font-size:12px;font-weight:500;padding:5px 2px 4px;border-radius:6px;transition:background .15s,color .15s;min-width:0}
+nav .nl{display:inline-flex;align-items:center;gap:5px;font-weight:600;color:var(--foreground)}
+nav .nv{font-family:var(--mono);font-size:12.5px;font-weight:600;color:var(--muted-fg);white-space:nowrap}nav .nv .lv{color:var(--accent)}
+nav .nd{font-size:10.5px;font-weight:600;white-space:nowrap;line-height:1.2}nav .nd.pos{color:var(--pos)}nav .nd.neg{color:var(--neg)}nav .nd.zero{color:var(--muted-fg)}
+nav a.on{background:var(--card);box-shadow:0 1px 3px rgb(0 0 0 / .12),0 0 0 1px rgb(0 0 0 / .06)}
+.top-tools{padding:0;margin-top:10px}
 
 /* distribution card */
 .dist{margin-top:16px}
@@ -113,8 +121,8 @@ nav a.on{background:var(--card);color:var(--foreground);box-shadow:0 1px 3px rgb
 
 @media(max-width:640px){
  .wrap{padding:0 12px 48px}.top{margin:12px -12px 0;padding:8px 12px}
- .kpis{gap:6px}.kpi{padding:8px 10px 9px}.kpi .v b{font-size:21px}
- nav a{font-size:12px;gap:4px}
+ .kpis{gap:6px;grid-template-columns:repeat(4,1fr)}.kpi{padding:7px 8px 8px}.kpi .v b{font-size:19px}.kpi .k{font-size:11px}.kpi .v span{font-size:11px}.kpi .nd{font-size:10px}.btn.sm{padding:0 10px;font-size:12px}
+ nav a,nav .tot{font-size:11px}nav .nv{font-size:11.5px}nav .nd{font-size:9.5px}nav .nl{gap:4px}
  .card-h{padding:14px 14px 10px;flex-direction:column;gap:8px}.mini{text-align:left;min-width:0;width:100%}.mini-v{margin:0 0 4px}
  .table{padding:0 14px 6px}.thead{display:none}
  .row{grid-template-columns:38px 26px 62px 38px 1fr;gap:5px;padding:8px 0}
@@ -126,23 +134,19 @@ nav a.on{background:var(--card);color:var(--foreground);box-shadow:0 1px 3px rgb
  .tools{padding:0 14px 12px}.prose{padding:0 14px 14px}
 }
 </style></head><body><div class="wrap">
-<div class="tabs" role="tablist"><button type="button" role="tab" data-st="A">Strategia A<small>Dimarco + Malen</small></button><button type="button" role="tab" data-st="B">Strategia B<small>Malen, difesa a quattro pari</small></button></div>
+<div class="tabrow"><div class="tabs" role="tablist"><button type="button" role="tab" data-st="A">Strategia A<small>Dimarco + Malen</small></button><button type="button" role="tab" data-st="B">Strategia B<small>Malen, difesa a quattro pari</small></button></div><button id="reset" type="button" class="btn destructive sm" title="Azzera live">Azzera</button></div>
 
 <div class="top">
  <div class="kpis">
   <div class="card kpi"><div class="k">Residuo</div><div class="v"><b id="res">500</b><span>cr</span></div></div>
   <div class="card kpi hi"><div class="k">Offerta max</div><div class="v"><b id="omax">475</b><span>cr</span></div></div>
   <div class="card kpi"><div class="k">Slot</div><div class="v"><b id="slots">0</b><span>/ 25</span></div></div>
+  <div class="card kpi tot"><div class="k">Totale</div><div class="v"><b class="lv" data-l="T">0</b><span>/ <span data-s="T"></span></span></div><div class="nd" data-x="T"></div></div>
  </div>
- <nav><a href="#P" data-nav="P"><span class="dot" style="background:#f59e0b"></span>POR</a><a href="#D" data-nav="D"><span class="dot" style="background:#10b981"></span>DIF</a><a href="#C" data-nav="C"><span class="dot" style="background:#3b82f6"></span>CEN</a><a href="#A" data-nav="A"><span class="dot" style="background:#f43f5e"></span>ATT</a><a href="#regole" data-nav="regole">Regole</a></nav>
+ <nav><a href="#P" data-nav="P"><span class="nl"><span class="dot" style="background:#f59e0b"></span>POR</span><span class="nv"><b class="lv" data-l="P">0</b>/<span data-s="P"></span></span><span class="nd" data-x="P"></span></a><a href="#D" data-nav="D"><span class="nl"><span class="dot" style="background:#10b981"></span>DIF</span><span class="nv"><b class="lv" data-l="D">0</b>/<span data-s="D"></span></span><span class="nd" data-x="D"></span></a><a href="#C" data-nav="C"><span class="nl"><span class="dot" style="background:#3b82f6"></span>CEN</span><span class="nv"><b class="lv" data-l="C">0</b>/<span data-s="C"></span></span><span class="nd" data-x="C"></span></a><a href="#A" data-nav="A"><span class="nl"><span class="dot" style="background:#f43f5e"></span>ATT</span><span class="nv"><b class="lv" data-l="A">0</b>/<span data-s="A"></span></span><span class="nd" data-x="A"></span></a></nav>
 </div>
 
-<section class="card dist">
- <div class="card-h"><div><div class="card-title">Budget per reparto</div><p class="card-desc">Tetti della strategia, speso live e delta. I tetti sommano 500.</p></div><span class="delta" data-x="T"></span></div>
- <div class="dbar" id="dbar"></div>
- <div class="drows"><div class="drow"><span class="dl"><span class="dot" style="background:#f59e0b"></span>Portieri</span><span class="dtick tick" data-tick2="P"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="dv"><b class="lv" data-l="P">0</b><span class="muted"> / <span data-s="P"></span></span></span><span class="dd"><span class="delta" data-x="P"></span></span></div><div class="drow"><span class="dl"><span class="dot" style="background:#10b981"></span>Difesa</span><span class="dtick tick" data-tick2="D"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="dv"><b class="lv" data-l="D">0</b><span class="muted"> / <span data-s="D"></span></span></span><span class="dd"><span class="delta" data-x="D"></span></span></div><div class="drow"><span class="dl"><span class="dot" style="background:#3b82f6"></span>Centrocampo</span><span class="dtick tick" data-tick2="C"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="dv"><b class="lv" data-l="C">0</b><span class="muted"> / <span data-s="C"></span></span></span><span class="dd"><span class="delta" data-x="C"></span></span></div><div class="drow"><span class="dl"><span class="dot" style="background:#f43f5e"></span>Attacco</span><span class="dtick tick" data-tick2="A"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="dv"><b class="lv" data-l="A">0</b><span class="muted"> / <span data-s="A"></span></span></span><span class="dd"><span class="delta" data-x="A"></span></span></div><div class="drow total"><span class="dl">Totale</span><span></span><span class="dv"><b class="lv" data-l="T">0</b><span class="muted"> / <span data-s="T"></span></span></span><span class="dd"></span></div></div>
- <div class="tools"><button id="reset" type="button" class="btn destructive">Azzera live</button></div>
-</section>
+
 
 <section class="card dept" id="P" style="--c:#f59e0b">
  <div class="card-h">
@@ -319,10 +323,6 @@ nav a.on{background:var(--card);color:var(--foreground);box-shadow:0 1px 3px rgb
  <div class="c5"><span class="prof"><span class="prof-ic">≡</span><span class="t" data-desc="A6"></span><span class="f" data-fb="A6" hidden></span></span><button type="button" class="info" data-open="A6" aria-label="Apri profilo A6">›</button></div>
 </div></div>
 </section>
-<div id="regole"></div>
-<section class="card reg" data-reg="A"><div class="card-h"><div><div class="card-title">Regole al tavolo<span class="badge secondary">strategia A</span></div><p class="card-desc">Ordine di chiamata, vincoli e cosa fare se un pezzo salta.</p></div></div>
-<div class="prose"><h3>Ordine di chiamata</h3><ol><li><b>A1</b> per primo, tetto 205. Si decide qui se questa è la strategia.</li><li><b>D1</b>, tetto 65. Se supera, lascia e passa alla Strategia B.</li><li>I tre difensori D2–D4 uno dietro l’altro, prima che il mercato si accorga dei 6,5–6,7 a 30.</li><li>A2 appena passa sotto 33.</li><li>Tutto il centrocampo e le riserve a fine asta, quando i budget altrui sono vuoti.</li></ol><h3>Vincoli</h3><ul><li>Il numero accanto allo slot è il <b>tetto</b>, non un obiettivo: sopra di 1 si lascia. I tetti sommano già 500, quindi ogni credito pagato in più è un credito tolto a fine asta al centrocampo.</li><li>Comprare sotto il tetto è il vero guadagno: ciò che avanza si accumula e va su C1 o su un rilancio a A1/D1 — mai su A2, mai su un tetto già saltato.</li><li>Dopo A1, <b>nessuno tra 40 e 60</b>: in quella fascia il listone paga il doppio per punto.</li><li>Mai due giocatori della stessa squadra tra i titolari di un reparto.</li><li>Il quarto difensore va comunque a 20–26: tra 20 e 26 c’è il gradino da 6,4 a 6,5 a 3 crediti per 0,1. È l’unico slot dove risparmiare costa più di quanto rende.</li><li>Il modificatore in questa lega è a scala 0,5: tra un blocco da 6,3 e uno da 6,1 passano 0,2 punti a giornata, cioè 20 crediti in tutto. Non pagare la media voto, paga i voti.</li><li>Le riserve a 1–2 sono titolari veri con 3 presenze su 3. Il listone dice titolarità 5 anche a chi è infortunato fino a gennaio: prima di chiamare un 1-credito, controlla che abbia giocato la settimana scorsa.</li><li>Se un tetto salta lo stesso, il credito esce dallo slot successivo dello stesso reparto: D2 sopra di 4 → D3 sotto di 4.</li></ul><h3>Se salta un pezzo</h3><div class="callouts"><div class="callout"><h4>A1 sopra 205</h4><p>Lascia. Piano di riserva: il secondo 8,0 del listone fino a 180, oppure un 7,5 fino a 95 e i 105 avanzati su C1 (un 7,1 a 57) e A2 (un 7,2 a 45).</p></div><div class="callout"><h4>D1 sopra 65</h4><p>Lascia e usa la Strategia B: quattro da 6,5–6,7 con tetti 38/32/27/23, i 25 in più su C1 (un 7,1–7,2, tetto 55).</p></div><div class="callout"><h4>I 6,6–6,7 sotto 30 già andati</h4><p>Scendi ai 6,4–6,5 a 20–26 di squadre con difesa forte. Non salire su nessuno sopra 30.</p></div><div class="callout"><h4>Hai sforato tre tetti di 5</h4><p>I quindici escono da A2 (un 6,9 a 22 al posto del 7,1 a 33) e da C2 (16 al posto di 24).</p></div></div></div></section><section class="card reg" data-reg="B"><div class="card-h"><div><div class="card-title">Regole al tavolo<span class="badge secondary">strategia B</span></div><p class="card-desc">Ordine di chiamata, vincoli e cosa fare se un pezzo salta.</p></div></div>
-<div class="prose"><h3>Ordine di chiamata</h3><ol><li><b>A1</b> per primo, tetto 205.</li><li><b>D1</b> e <b>D2</b> subito dopo, entrambi sotto 38.</li><li>D3 e D4, poi C1 prima che i budget altrui lo portino a 60.</li><li>A2 appena passa sotto 33.</li><li>Il resto del centrocampo e le riserve a fine asta.</li></ol><h3>Vincoli</h3><ul><li>Il numero accanto allo slot è il <b>tetto</b>, non un obiettivo: sopra di 1 si lascia. I tetti sommano già 500, quindi ogni credito pagato in più è un credito tolto a fine asta al centrocampo.</li><li>Comprare sotto il tetto è il vero guadagno: ciò che avanza si accumula e va su C1 o su un rilancio a A1/D1 — mai su A2, mai su un tetto già saltato.</li><li>Dopo A1, <b>nessuno tra 40 e 60</b>: in quella fascia il listone paga il doppio per punto.</li><li>Mai due giocatori della stessa squadra tra i titolari di un reparto.</li><li>Il quarto difensore va comunque a 20–26: tra 20 e 26 c’è il gradino da 6,4 a 6,5 a 3 crediti per 0,1. È l’unico slot dove risparmiare costa più di quanto rende.</li><li>Il modificatore in questa lega è a scala 0,5: tra un blocco da 6,3 e uno da 6,1 passano 0,2 punti a giornata, cioè 20 crediti in tutto. Non pagare la media voto, paga i voti.</li><li>Le riserve a 1–2 sono titolari veri con 3 presenze su 3. Il listone dice titolarità 5 anche a chi è infortunato fino a gennaio: prima di chiamare un 1-credito, controlla che abbia giocato la settimana scorsa.</li><li>Se un tetto salta lo stesso, il credito esce dallo slot successivo dello stesso reparto: D2 sopra di 4 → D3 sotto di 4.</li></ul><h3>Se salta un pezzo</h3><div class="callouts"><div class="callout"><h4>A1 sopra 205</h4><p>Lascia. Piano di riserva: il secondo 8,0 fino a 180, oppure un 7,5 fino a 95 e i 105 avanzati su C1 e A2.</p></div><div class="callout"><h4>D1 sopra 38</h4><p>Lascia: D1 diventa il secondo 6,6 con tetto 32, e D2 scende a un 6,5 a 27.</p></div><div class="callout"><h4>C1 sopra 55</h4><p>C1 scende a un 7,0 a 30 e i 25 avanzati vanno su A2 (un 7,2 a 45) e D1 (+5).</p></div><div class="callout"><h4>Hai sforato tre tetti di 5</h4><p>I quindici escono da A2 (un 6,9 a 22 al posto del 7,1 a 33) e da C2 (16 al posto di 24).</p></div></div></div></section>
 <div class="modal" id="modal" hidden><div class="modal-bg" data-close></div><div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="m-title"><div class="modal-h"><span class="badge outline" id="m-slot"></span><span class="m-cap">tetto <b id="m-cap"></b></span><button type="button" class="m-x" data-close aria-label="Chiudi">×</button></div><p class="m-t" id="m-title"></p><p class="m-f" id="m-f"></p></div></div>
 <p class="foot">Offerta massima = residuo − slot ancora vuoti · la colonna live è condivisa tra A e B e resta nel link della pagina.</p>
 </div>
@@ -333,30 +333,28 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const inputs=$$('input[data-k]'); const st={}; let cur='A';
 function load(){try{const h=location.hash.slice(1);if(h){const o=JSON.parse(decodeURIComponent(h));if(o._s)cur=o._s;delete o._s;Object.assign(st,o);}}catch(e){} inputs.forEach(i=>{if(st[i.dataset.k]!=null)i.value=st[i.dataset.k];});}
 function save(){try{const o={_s:cur};for(const k in st)if(st[k]!==''&&st[k]!=null)o[k]=st[k];history.replaceState(null,'','#'+encodeURIComponent(JSON.stringify(o)));}catch(e){}}
-function delta(el,v,label){if(v===0){el.textContent=label||'al tetto';el.className='delta zero';return;}el.textContent=(v>0?'+':'−')+Math.abs(v)+(label?' '+label:'');el.className='delta '+(v>0?'neg':'pos');}
+function delta(el,v,label){if(el.classList.contains('nd')){if(v===0){el.textContent='in linea';el.className='nd zero';return;}el.textContent=(v>0?'+'+v+' in più':'−'+(-v)+' salvati');el.className='nd '+(v>0?'neg':'pos');return;}if(v===0){el.textContent=label||'al tetto';el.className='delta zero';return;}el.textContent=(v>0?'+':'−')+Math.abs(v)+(label?' '+label:'');el.className='delta '+(v>0?'neg':'pos');}
 function ticksFor(el,val,max){const is=[...el.children];const n=is.length;const lit=max>0?Math.round(Math.min(val,max)/max*n):0;is.forEach((i,k)=>{i.className=k<lit?(val>max?'over':'on'):'';});}
 function applyStrat(){const D=DATA[cur];
  $$('.tabs button').forEach(b=>{b.classList.toggle('on',b.dataset.st===cur);b.setAttribute('aria-selected',b.dataset.st===cur);});
- $$('.reg[data-reg]').forEach(r=>r.classList.toggle('on',r.dataset.reg===cur));
  for(const r of ['P','D','C','A']){$('[data-note="'+r+'"]').textContent=D.note[r]||'';$('[data-lv-cap="'+r+'"]').textContent=D.budget[r];}
  for(const s in D.slots){$('[data-cap="'+s+'"]').textContent=D.slots[s].cap;$('[data-desc="'+s+'"]').textContent=D.slots[s].desc;$('[data-fb="'+s+'"]').textContent=D.slots[s].fb||'';}
- $('#dbar').innerHTML=['P','D','C','A'].map(r=>'<i style="flex:'+D.budget[r]+';background:'+TONE[r]+'" title="'+r+' '+D.budget[r]+'"></i>').join('');
  calc();save();}
-function calc(){const D=DATA[cur];const live={P:0,D:0,C:0,A:0},cnt={P:0,D:0,C:0,A:0};let filled=0,total=0;
+function calc(){const D=DATA[cur];const live={P:0,D:0,C:0,A:0},cnt={P:0,D:0,C:0,A:0},capF={P:0,D:0,C:0,A:0};let filled=0,total=0,capFT=0;
  for(const slot in D.slots){const cap=D.slots[slot].cap;const v=parseInt(st[slot+'c']);const row=$('[data-slot="'+slot+'"]');const d=row.querySelector('.delta');row.classList.remove('over','done');
-  if(!isNaN(v)&&v>0){filled++;total+=v;live[ROLES[slot]]+=v;cnt[ROLES[slot]]++;const diff=v-cap;row.classList.add(diff>0?'over':'done');delta(d,diff);}
+  if(!isNaN(v)&&v>0){filled++;total+=v;live[ROLES[slot]]+=v;cnt[ROLES[slot]]++;capF[ROLES[slot]]+=cap;capFT+=cap;const diff=v-cap;row.classList.add(diff>0?'over':'done');delta(d,diff);}
   else{d.textContent='';d.className='delta';}}
  const res=500-total,om=res-(25-filled);
  $('#res').textContent=res;$('#omax').textContent=Math.max(om,0);$('#slots').textContent=filled;
  let capT=0;for(const r of ['P','D','C','A']){capT+=D.budget[r];$('[data-s="'+r+'"]').textContent=D.budget[r];$('[data-l="'+r+'"]').textContent=live[r];$('[data-lv="'+r+'"]').textContent=live[r];
-  const n=Object.keys(D.slots).filter(s=>ROLES[s]===r).length;$('[data-cnt="'+r+'"]').textContent=cnt[r]+'/'+n;delta($('[data-x="'+r+'"]'),live[r]-D.budget[r]);
-  const t1=$('[data-tick="'+r+'"]'),t2=$('[data-tick2="'+r+'"]');[t1,t2].forEach(t=>{t.style.setProperty('--c',TONE[r]);ticksFor(t,live[r],D.budget[r]);});}
- $('[data-s="T"]').textContent=capT;$('[data-l="T"]').textContent=total;delta($('[data-x="T"]'),total-capT,'sul totale');}
+  const n=Object.keys(D.slots).filter(s=>ROLES[s]===r).length;$('[data-cnt="'+r+'"]').textContent=cnt[r]+'/'+n;delta($('[data-x="'+r+'"]'),live[r]-capF[r]);
+  const t1=$('[data-tick="'+r+'"]');t1.style.setProperty('--c',TONE[r]);ticksFor(t1,live[r],D.budget[r]);}
+ $('[data-s="T"]').textContent=capT;$('[data-l="T"]').textContent=total;delta($('[data-x="T"]'),total-capFT);}
 inputs.forEach(i=>i.addEventListener('input',()=>{st[i.dataset.k]=i.value;save();calc();}));
 $$('.tabs button').forEach(b=>b.addEventListener('click',()=>{cur=b.dataset.st;applyStrat();}));
 $('#reset').addEventListener('click',()=>{if(!confirm('Azzero tutta la colonna live?'))return;for(const k in st)delete st[k];inputs.forEach(i=>i.value='');save();calc();});
 const navs=$$('nav a');const targets=['P','D','C','A'].map(r=>$('#'+r));
-if('IntersectionObserver' in window){const vis=new Set();const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)vis.add(e.target.id);else vis.delete(e.target.id);});const first=['P','D','C','A'].find(r=>vis.has(r));navs.forEach(a=>a.classList.toggle('on',a.dataset.nav===first));},{rootMargin:'-126px 0px -55% 0px'});targets.forEach(t=>io.observe(t));}
+if('IntersectionObserver' in window){const vis=new Set();const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)vis.add(e.target.id);else vis.delete(e.target.id);});const first=['P','D','C','A'].find(r=>vis.has(r));navs.forEach(a=>a.classList.toggle('on',a.dataset.nav===first));},{rootMargin:'-150px 0px -55% 0px'});targets.forEach(t=>io.observe(t));}
 
 const modal=$('#modal');
 function openM(slot){const D=DATA[cur];const d=D.slots[slot];$('#m-slot').textContent=slot;$('#m-cap').textContent=d.cap;$('#m-title').textContent=d.desc;$('#m-f').textContent=d.fb||'';modal.hidden=false;document.body.style.overflow='hidden';$('.m-x').focus();}
